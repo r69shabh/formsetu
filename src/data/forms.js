@@ -14,9 +14,7 @@ export const MOCK_DIGILOCKER = {
     income: {
       annualIncome: { value: '96000', source: 'Income certificate' }
     },
-    marksheet: {
-      file: { value: { name: 'Class 12 marksheet', meta: 'PDF · 1.2 MB', source: 'DigiLocker', status: 'Verified' }, source: 'DigiLocker' }
-    },
+
     incomeCertificate: {
       file: { value: { name: 'Income certificate', meta: 'PDF · 860 KB', source: 'DigiLocker', status: 'Verified' }, source: 'DigiLocker' }
     }
@@ -25,7 +23,7 @@ export const MOCK_DIGILOCKER = {
 
 const nspFields = [
   {
-    id: 'fullName', label: 'What is your full name?', shortLabel: 'Full name', type: 'text', required: true,
+    id: 'fullName', label: 'What is your name?', shortLabel: 'Full name', type: 'text', required: true,
     options: [], prefillSource: 'digilocker.identity.fullName', chatPrompt: 'I found your name on your Aadhaar card. Is “Ananya Sharma” correct?',
     backendField: 'applicant_name', placeholder: 'e.g. Ananya Sharma', help: 'Use the name exactly as it appears on your Aadhaar or marksheet.'
   },
@@ -60,8 +58,8 @@ const nspFields = [
     backendField: 'bank_account_number', placeholder: 'Enter account number', help: 'Use an active account in your name and double-check every digit.'
   },
   {
-    id: 'marksheet', label: 'Confirm your latest marksheet', shortLabel: 'Latest marksheet', type: 'file', required: true,
-    options: [], prefillSource: 'digilocker.marksheet.file', chatPrompt: 'I found your Class 12 marksheet in DigiLocker. Please confirm it is the document you want to submit.',
+    id: 'marksheet', label: 'Upload your latest marksheet', shortLabel: 'Latest marksheet', type: 'file', required: true,
+    options: [], prefillSource: null, chatPrompt: 'Please upload your latest marksheet.',
     backendField: 'class_12_marksheet', help: 'Check that the document is readable and all its corners are visible.'
   },
   {
@@ -96,11 +94,11 @@ const incomeFields = [
 
 export const FORM_SCHEMAS = {
   nsp: {
-    formId: 'nsp', id: 'nsp', title: 'Scholarship application', service: 'National Scholarship Portal',
+    formId: 'nsp', id: 'nsp', title: 'Scholarship application', service: 'National Scholarship Portal', department: 'Department of Higher Education',
     description: 'Post-matric scholarship · 2026–27', accent: 'mint', fields: nspFields
   },
   income: {
-    formId: 'income', id: 'income', title: 'Income certificate request', service: 'Citizen services',
+    formId: 'income', id: 'income', title: 'Income certificate request', service: 'Citizen services', department: 'Revenue Department',
     description: 'A short form using the same FormSetu engine', accent: 'violet', fields: incomeFields
   }
 };

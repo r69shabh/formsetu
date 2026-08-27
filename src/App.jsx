@@ -1,18 +1,45 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import {
-  ArrowLeft, ArrowRight, Bot, Check, CheckCircle2, ChevronRight, CircleHelp,
-  FileText, Globe2, Landmark, LoaderCircle, LockKeyhole, Mic, PanelRight,
-  Send, ShieldCheck, Sparkles, Upload, X, Zap
+  ArrowLeft, ArrowRight, Check, CheckCircle2, CircleHelp,
+  FileText, Landmark, LoaderCircle, LockKeyhole, PanelRight,
+  ShieldCheck, Sparkles, Upload, X, Zap, Globe, Smartphone, KeyRound, Building2
 } from 'lucide-react';
 import { api } from './api.js';
-import { buildSubmissionPayload, getInitialState } from './data/forms.js';
+import { FORM_SCHEMAS, buildSubmissionPayload, getInitialState } from './data/forms.js';
+import { TRANSLATIONS, t, tField } from './data/translations.js';
 
-const demoVoice = { fullName: 'Ananya Sharma', phone: '9876543210', dob: '05/09/2002', category: 'OBC-NCL', state: 'Maharashtra', annualIncome: '96000', bankAccount: '201145009811', applicantName: 'Ananya Sharma', purpose: 'Education', income: '96000' };
+export const INDIAN_LANGUAGES = [
+  { code: 'en', name: 'English', native: 'English' },
+  { code: 'hinglish', name: 'Hinglish', native: 'Hinglish (हिंग्लिश)' },
+  { code: 'hi', name: 'Hindi', native: 'हिन्दी' },
+  { code: 'bn', name: 'Bengali', native: 'বাংলা' },
+  { code: 'te', name: 'Telugu', native: 'తెలుగు' },
+  { code: 'mr', name: 'Marathi', native: 'मराठी' },
+  { code: 'ta', name: 'Tamil', native: 'தமிழ்' },
+  { code: 'gu', name: 'Gujarati', native: 'ગુજરાતી' },
+  { code: 'ur', name: 'Urdu', native: 'اردو' },
+  { code: 'kn', name: 'Kannada', native: 'ಕನ್ನಡ' },
+  { code: 'or', name: 'Odia', native: 'ଓଡ଼ିଆ' },
+  { code: 'ml', name: 'Malayalam', native: 'മലയാളം' },
+  { code: 'pa', name: 'Punjabi', native: 'ਪੰਜਾਬੀ' },
+  { code: 'as', name: 'Assamese', native: 'অসমীয়া' },
+  { code: 'mai', name: 'Maithili', native: 'मैथिली' },
+  { code: 'sa', name: 'Sanskrit', native: 'संस्कृतम्' },
+  { code: 'ne', name: 'Nepali', native: 'नेपाली' },
+  { code: 'kok', name: 'Konkani', native: 'कोंकणी' },
+  { code: 'ks', name: 'Kashmiri', native: 'कॉशुर' },
+  { code: 'sat', name: 'Santali', native: 'ᱥᱟᱱᱛᱟᱲᱤ' },
+  { code: 'sd', name: 'Sindhi', native: 'سنڌي / सिंधी' },
+  { code: 'brx', name: 'Bodo', native: 'बड़ो' },
+  { code: 'mni', name: 'Manipuri', native: 'মৈতৈলোন্' },
+  { code: 'doi', name: 'Dogri', native: 'डोगरी' },
+];
 
 function App() {
-  const [catalog, setCatalog] = useState([]);
   const [schema, setSchema] = useState(null);
-  const [phase, setPhase] = useState('home');
+  const [phase, setPhase] = useState('language'); // 'language' -> 'digilocker_mobile' -> 'digilocker_otp' -> 'connecting' -> 'form' -> 'review' -> 'status'
+  const [lang, setLang] = useState('en');
+  const [mobile, setMobile] = useState('9876543210');
   const [values, setValues] = useState({});
   const [sources, setSources] = useState({});
   const [documents, setDocuments] = useState({});
@@ -20,12 +47,6 @@ function App() {
   const [mode, setMode] = useState('guided');
   const [issues, setIssues] = useState({});
   const [showOptions, setShowOptions] = useState(false);
-  const [chatOpen, setChatOpen] = useState(true);
-  const [chat, setChat] = useState([]);
-  const [chatDraft, setChatDraft] = useState('');
-  const [chatBusy, setChatBusy] = useState(false);
-  const [language, setLanguage] = useState('English');
-  const [tone, setTone] = useState('simple');
   const [busy, setBusy] = useState(false);
   const [toast, setToast] = useState('');
   const [preview, setPreview] = useState(null);
@@ -36,38 +57,82 @@ function App() {
   const field = schema?.fields[current];
   const completeCount = useMemo(() => schema?.fields.filter((item) => item.type === 'file' ? documents[item.id] : values[item.id]).length || 0, [schema, values, documents]);
 
-  useEffect(() => { api.forms().then(setCatalog).catch(() => setToast('The local API is not running yet. Start with npm run dev.')); }, []);
-  useEffect(() => { if (!toast) return undefined; const timer = setTimeout(() => setToast(''), 3000); return () => clearTimeout(timer); }, [toast]);
+  useEffect(() => {
+    const requestedForm = new URLSearchParams(window.location.search).get('form');
+    chooseForm(requestedForm === 'income' ? 'income' : 'nsp');
+  }, []);
+  
+  useEffect(() => { 
+    if (!toast) return undefined; 
+    const timer = setTimeout(() => setToast(''), 3000); 
+    return () => clearTimeout(timer); 
+  }, [toast]);
 
   async function chooseForm(formId) {
     setBusy(true);
     try {
-      const nextSchema = await api.form(formId);
-      setSchema(nextSchema); setCurrent(0); setIssues({}); setMode('guided'); setSubmission(null); setStatus(null);
-      setChat([{ role: 'assistant', text: `Hi, I’m Setu. I’ll guide you through this ${nextSchema.title.toLowerCase()} one clear question at a time.` }]);
-      if (formId === 'nsp') { setPhase('consent'); }
-      else {
-        const payload = await api.prefill(formId);
-        hydrate(payload, nextSchema); setPhase('form');
-      }
-    } catch (error) { setToast(error.message); }
-    finally { setBusy(false); }
+      let nextSchema = FORM_SCHEMAS[formId] || FORM_SCHEMAS.nsp;
+      setSchema(nextSchema); 
+      setCurrent(0); 
+      setIssues({}); 
+      setMode('guided'); 
+      setSubmission(null); 
+      setStatus(null);
+      
+      let payload = getInitialState(nextSchema);
+      hydrate(payload, nextSchema);
+      setPhase('language');
+    } catch (error) {
+      const fallback = FORM_SCHEMAS[formId] || FORM_SCHEMAS.nsp;
+      setSchema(fallback);
+      hydrate(getInitialState(fallback), fallback);
+      setPhase('language');
+    } finally {
+      setBusy(false);
+    }
   }
 
   function hydrate(payload, targetSchema = schema) {
-    const state = payload.mockResponse && targetSchema ? getInitialState(targetSchema, payload.mockResponse) : payload;
-    setValues(state.values || {}); setSources(state.sources || {}); setDocuments(state.documents || {});
+    const currentSchema = targetSchema || schema;
+    const base = currentSchema ? getInitialState(currentSchema) : payload;
+    const nextValues = { ...(base.values || {}), ...(payload.values || {}) };
+    const nextSources = { ...(base.sources || {}), ...(payload.sources || {}) };
+    const nextDocuments = { ...(base.documents || {}), ...(payload.documents || {}) };
+
+    if (currentSchema?.fields) {
+      for (const f of currentSchema.fields) {
+        if (!f.prefillSource) {
+          delete nextDocuments[f.id];
+          delete nextSources[f.id];
+          if (f.defaultValue === undefined) {
+            delete nextValues[f.id];
+          }
+        }
+      }
+    }
+
+    setValues(nextValues);
+    setSources(nextSources);
+    setDocuments(nextDocuments);
   }
 
   async function authenticate(credentials) {
     setBusy(true);
     setPhase('connecting');
     try {
-      await api.auth({ formId: schema.id, ...credentials });
+      await api.auth({ formId: schema.id, mobile, credential: credentials.credential || '123456', mode: credentials.mode || 'otp' });
       const payload = await api.prefill(schema.id);
-      hydrate(payload, schema); setPhase('form'); setToast(`${payload.matchedDocuments} documents matched and ready to review.`);
-    } catch (error) { setPhase('auth'); setToast(error.message); }
-    finally { setBusy(false); }
+      hydrate(payload, schema); 
+      setTimeout(() => {
+        setPhase('form'); 
+        setToast(`${payload.matchedDocuments || 3} documents verified & ready.`);
+      }, 1300);
+    } catch (error) { 
+      setPhase('digilocker_otp'); 
+      setToast(error.message); 
+    } finally { 
+      setBusy(false); 
+    }
   }
 
   function uploadFile(fieldId, file) {
@@ -98,7 +163,11 @@ function App() {
 
   async function next() {
     if (!validateCurrent()) return;
-    if (current < schema.fields.length - 1) { setCurrent((previous) => previous + 1); setShowOptions(false); return; }
+    if (current < schema.fields.length - 1) { 
+      setCurrent((previous) => previous + 1); 
+      setShowOptions(false); 
+      return; 
+    }
     await review();
   }
 
@@ -109,111 +178,902 @@ function App() {
       if (!validation.valid) {
         setIssues(validation.issues);
         const firstBad = schema.fields.findIndex((item) => validation.issues[item.id]);
-        setCurrent(Math.max(firstBad, 0)); setMode('guided'); setPhase('form'); setToast('A few answers need your attention.');
-      } else setPhase('review');
-    } catch (error) { setToast(error.message); }
-    finally { setBusy(false); }
+        setCurrent(Math.max(firstBad, 0)); 
+        setMode('guided'); 
+        setPhase('form'); 
+        setToast('A few answers need your attention.');
+      } else {
+        setPhase('review');
+      }
+    } catch (error) { 
+      setToast(error.message); 
+    } finally { 
+      setBusy(false); 
+    }
   }
 
   async function submit() {
     setPhase('submitting');
     try {
       const result = await api.submit({ formId: schema.id, values, documents, simulateMismatch });
-      setSubmission(result); setPhase('success');
+      setSubmission(result); 
+      setPhase('success');
     } catch (error) {
-      setIssues(error.data?.issues || {}); setPhase('failure');
+      setIssues(error.data?.issues || {}); 
+      setPhase('failure');
     }
   }
 
-  async function askChat(text = chatDraft) {
-    const message = text.trim(); if (!message || !schema) return;
-    setChat((previous) => [...previous, { role: 'user', text: message }]); setChatDraft(''); setChatBusy(true);
-    try {
-      const result = await api.chat({ formId: schema.id, fieldId: field?.id, message, mode: tone, language });
-      setChat((previous) => [...previous, { role: 'assistant', text: result.reply }]);
-      if (result.action?.type === 'show_options') setShowOptions(true);
-      if (result.action?.type === 'prefill') setToast('Matched document details are marked in green.');
-    } catch (error) { setChat((previous) => [...previous, { role: 'assistant', text: 'I could not reach the local guide right now. Please try again.' }]); }
-    finally { setChatBusy(false); }
-  }
-
-  function listen() {
-  if (!field || field.type === 'file') return;
-    const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!Recognition) { updateValue(field.id, demoVoice[field.id] || 'No'); setToast('Voice preview added a sample answer.'); return; }
-    const recognition = new Recognition(); recognition.lang = language === 'Hindi' ? 'hi-IN' : 'en-IN';
-    setToast('Listening…');
-    recognition.onresult = (event) => updateValue(field.id, event.results[0][0].transcript);
-    recognition.onerror = () => setToast('I could not hear that. Try typing instead.');
-    recognition.start();
-  }
-
   async function track(reference) {
-    try { const result = await api.status(reference); setStatus(result); setPhase('status'); }
-    catch (error) { setToast(error.message); }
+    try { 
+      const result = await api.status(reference); 
+      setStatus(result); 
+      setPhase('status'); 
+    } catch (error) { 
+      const demoRef = reference || `${schema?.id === 'nsp' ? 'NSP' : 'INC'}-2026-9A82F`;
+      setStatus({
+        reference: demoRef,
+        stage: 'Under Department Review',
+        timeline: [
+          { title: 'Application Submitted', detail: 'Application received and registered on portal.', state: 'complete' },
+          { title: 'DigiLocker Verification', detail: 'Identity, marksheet and income records verified.', state: 'complete' },
+          { title: 'Department Scrutiny', detail: 'Verification officer reviewing eligibility.', state: 'complete' },
+          { title: 'Final Approval & Disbursal', detail: 'Sanction order and direct bank transfer.', state: 'pending' }
+        ]
+      });
+      setPhase('status'); 
+    }
   }
 
-  if (phase === 'home') return <Home catalog={catalog} onChoose={chooseForm} busy={busy} />;
   if (!schema) return <LoadingScreen label="Loading your form" />;
-  if (phase === 'consent') return <Shell schema={schema} onHome={() => setPhase('home')}><Consent onContinue={() => setPhase('auth')} /></Shell>;
-  if (phase === 'auth') return <Shell schema={schema} onHome={() => setPhase('home')}><Auth onSubmit={authenticate} busy={busy} /></Shell>;
-  if (phase === 'connecting') return <Shell schema={schema} onHome={() => setPhase('home')}><LoadingScreen label="Matching your documents" /></Shell>;
-  if (phase === 'review') return <Shell schema={schema} onHome={() => setPhase('home')}><Review schema={schema} values={values} sources={sources} documents={documents} payload={buildSubmissionPayload(schema, values, documents)} mismatch={simulateMismatch} onMismatch={setSimulateMismatch} onEdit={() => { setMode('simple'); setPhase('form'); }} onSubmit={submit} /></Shell>;
-  if (phase === 'submitting') return <Shell schema={schema} onHome={() => setPhase('home')}><LoadingScreen label="Sending your application" /></Shell>;
-  if (phase === 'success') return <Shell schema={schema} onHome={() => setPhase('home')}><Success schema={schema} submission={submission} onTrack={() => track(submission.reference)} onHome={() => setPhase('home')} /></Shell>;
-  if (phase === 'failure') return <Shell schema={schema} onHome={() => setPhase('home')}><Failure issues={issues} onReview={() => { setMode('simple'); setPhase('form'); }} /></Shell>;
-  if (phase === 'status') return <Shell schema={schema} onHome={() => setPhase('home')}><Status status={status} onHome={() => setPhase('home')} /></Shell>;
 
-  return <Shell schema={schema} onHome={() => setPhase('home')}><main className="flow-layout"><section className="flow-main"><FormHeader schema={schema} mode={mode} setMode={setMode} /><Progress schema={schema} current={current} completeCount={completeCount} />{mode === 'guided' ? <GuidedField field={field} value={values[field.id] || ''} source={sources[field.id]} document={documents[field.id]} error={issues[field.id]} onChange={updateValue} onChoose={(value) => updateValue(field.id, value)} onUpload={uploadFile} onPreview={setPreview} showOptions={showOptions} setShowOptions={setShowOptions} onListen={listen} onBack={() => setCurrent((item) => Math.max(0, item - 1))} onNext={next} atStart={current === 0} atEnd={current === schema.fields.length - 1} /> : <SimpleView schema={schema} values={values} sources={sources} documents={documents} issues={issues} onChange={updateValue} onUpload={uploadFile} onPreview={setPreview} onReview={review} />}</section>{chatOpen && <ChatPanel chat={chat} draft={chatDraft} setDraft={setChatDraft} busy={chatBusy} language={language} setLanguage={setLanguage} tone={tone} setTone={setTone} onAsk={askChat} onClose={() => setChatOpen(false)} field={field} />}{!chatOpen && <button className="chat-fab" onClick={() => setChatOpen(true)} aria-label="Open Setu guide"><Bot size={20} /></button>}</main>{busy && <BusyOverlay />}{preview && <DocumentModal document={preview} onClose={() => setPreview(null)} />}{toast && <div className="toast"><CheckCircle2 size={16} />{toast}</div>}</Shell>;
-}
-
-function Home({ catalog, onChoose, busy }) {
-  return <div className="landing"><nav className="landing-nav"><Brand /><div className="nav-note"><span className="online-dot" /> Local prototype · schema API enabled</div></nav><main className="landing-main"><section className="hero-copy reveal"><div className="eyebrow"><Sparkles size={14} /> A kinder way through public forms</div><h1>Every question<br /><em>feels familiar.</em></h1><p>FormSetu turns long, high-stakes forms into a calm conversation that remembers what your documents already know.</p><div className="hero-actions"><button className="button button-primary" onClick={() => onChoose('nsp')} disabled={busy}>Start scholarship flow <ArrowRight size={17} /></button><button className="text-button" onClick={() => document.getElementById('forms')?.scrollIntoView({ behavior: 'smooth' })}>Explore the engine <ChevronRight size={16} /></button></div><div className="proof-row"><span><ShieldCheck size={16} /> Consent first</span><span><Bot size={16} /> Guide built in</span><span><Landmark size={16} /> No real government API</span></div></section><section className="hero-scene reveal delay-1"><div className="orb orb-one" /><div className="orb orb-two" /><div className="hero-card"><div className="card-top"><span className="mini-brand"><i /> formsetu</span><span className="live-pill"><span /> Guided</span></div><div className="mini-steps"><b /><b /><b className="current" /><b /><b /></div><p className="mini-kicker">Step 03 · Your identity</p><h3>Is this date of birth correct?</h3><div className="mini-answer"><span>05 / 09 / 2002</span><CheckCircle2 size={19} /></div><div className="mini-source"><span><Sparkles size={13} /> Matched from DigiLocker</span><button>Change</button></div><div className="mini-chat"><Bot size={17} /><span>Want an explanation? I can help.</span></div></div></section></main><section id="forms" className="form-chooser"><div><div className="eyebrow"><Zap size={14} /> One renderer, many services</div><h2>Pick a form to explore</h2></div><div className="chooser-grid">{catalog.length ? catalog.map((item, index) => <button key={item.id} className={`form-option ${index ? 'violet' : ''}`} onClick={() => onChoose(item.id)}><span className="form-option-icon">{index ? <FileText size={21} /> : <Landmark size={21} />}</span><span><strong>{item.title}</strong><small>{item.description}</small></span><ArrowRight size={18} /></button>) : <div className="skeleton-card" />}</div></section><footer>FormSetu concept prototype · Synthetic data only · Not an official government service</footer></div>;
-}
-
-function Shell({ schema, onHome, children }) { return <div className="app-shell"><aside className="sidebar"><Brand /><div className="nav-section"><span>Workspace</span><button className="nav-link" onClick={onHome}><Globe2 size={17} /> Explore forms</button><button className="nav-link active"><FileText size={17} /> My application</button></div><div className="side-foot"><span className="prototype-chip">Prototype</span><p>Built for demonstration. All document, submission and status data is synthetic.</p></div></aside><div className="app-content"><header className="topbar"><div><span className="crumb">Forms / {schema.service}</span><h2>{schema.title}</h2></div><div className="save-state"><span className="online-dot" /> Saved locally</div></header>{children}</div></div> }
-function Brand() { return <div className="brand"><span className="brand-mark"><i /><b /></span><span><strong>formsetu</strong><small>guided public forms</small></span></div> }
-function FormHeader({ schema, mode, setMode }) { return <div className="form-heading"><div><div className="eyebrow"><Sparkles size={14} /> {mode === 'guided' ? 'Guided journey' : 'Simple form view'}</div><h1>{mode === 'guided' ? <>Let’s make this<br /><em>feel easier.</em></> : <>All the details,<br /><em>one clear view.</em></>}</h1><p>{mode === 'guided' ? 'One question at a time, with a guide beside you when you need one.' : 'This is the same application state. Edit any answer, then review it together.'}</p></div><div className="view-toggle"><button className={mode === 'guided' ? 'active' : ''} onClick={() => setMode('guided')}>Guided</button><button className={mode === 'simple' ? 'active' : ''} onClick={() => setMode('simple')}>Simple</button></div></div> }
-function Progress({ schema, current, completeCount }) { return <div className="progress-block"><div className="progress-label"><span>Question <b>{String(current + 1).padStart(2, '0')}</b> of {String(schema.fields.length).padStart(2, '0')}</span><span>{Math.round((completeCount / schema.fields.length) * 100)}% ready</span></div><div className="progress-track">{schema.fields.map((item, index) => <i key={item.id} className={index < current ? 'done' : index === current ? 'current' : ''} />)}</div></div> }
-
-function fieldPrompt(field, value, source, document) {
-  if (source && field.type === 'file' && document) return `I found ${document.name} in ${source}. Please confirm it is the document you want to submit.`;
-  if (source && value) {
-    const shown = field.type === 'date' ? displayDate(value) : field.id.toLowerCase().includes('income') ? `₹${Number(value).toLocaleString('en-IN')}` : value;
-    return `I found ${shown} on your ${source}. Is that right?`;
+  // 1. Language Selection Screen
+  if (phase === 'language') {
+    return (
+      <Shell schema={schema} lang={lang} setLang={setLang}>
+        <LanguageSelect 
+          languages={INDIAN_LANGUAGES}
+          selected={lang}
+          onSelect={(code) => setLang(code)}
+          onContinue={() => setPhase('digilocker_mobile')}
+          lang={lang}
+        />
+      </Shell>
+    );
   }
-  return field.chatPrompt || field.help;
+
+  // 2. DigiLocker Mobile Input Screen
+  if (phase === 'digilocker_mobile') {
+    return (
+      <Shell schema={schema} lang={lang} setLang={setLang}>
+        <AuthMobile 
+          mobile={mobile}
+          setMobile={setMobile}
+          onBack={() => setPhase('language')}
+          onNext={() => setPhase('digilocker_otp')}
+          onTrack={() => track(`${schema?.id === 'nsp' ? 'NSP' : 'INC'}-2026-88192`)}
+          lang={lang}
+        />
+      </Shell>
+    );
+  }
+
+  // 3. DigiLocker OTP Verification Screen
+  if (phase === 'digilocker_otp') {
+    return (
+      <Shell schema={schema} lang={lang} setLang={setLang}>
+        <AuthOTP 
+          mobile={mobile}
+          onBack={() => setPhase('digilocker_mobile')}
+          onSubmit={authenticate}
+          busy={busy}
+          lang={lang}
+        />
+      </Shell>
+    );
+  }
+
+  // 4. Fetching & Matching Documents Screen
+  if (phase === 'connecting') {
+    return (
+      <Shell schema={schema} lang={lang} setLang={setLang}>
+        <FetchingScreen lang={lang} />
+      </Shell>
+    );
+  }
+
+  // 5. Review Screen
+  if (phase === 'review') {
+    return (
+      <Shell schema={schema} lang={lang} setLang={setLang}>
+        <Review 
+          schema={schema} 
+          values={values} 
+          sources={sources} 
+          documents={documents} 
+          payload={buildSubmissionPayload(schema, values, documents)} 
+          mismatch={simulateMismatch} 
+          onMismatch={setSimulateMismatch} 
+          onEdit={() => { setMode('simple'); setPhase('form'); }} 
+          onSubmit={submit} 
+          lang={lang}
+        />
+      </Shell>
+    );
+  }
+
+  if (phase === 'submitting') return <Shell schema={schema} lang={lang} setLang={setLang}><LoadingScreen label={t(lang, 'submitting_app')} /></Shell>;
+  if (phase === 'success') return <Shell schema={schema} lang={lang} setLang={setLang}><Success schema={schema} submission={submission} onTrack={() => track(submission.reference)} onRestart={() => chooseForm(schema.id)} lang={lang} /></Shell>;
+  if (phase === 'failure') return <Shell schema={schema} lang={lang} setLang={setLang}><Failure issues={issues} onReview={() => { setMode('simple'); setPhase('form'); }} lang={lang} /></Shell>;
+  if (phase === 'status') return <Shell schema={schema} lang={lang} setLang={setLang}><Status status={status} onRestart={() => chooseForm(schema.id)} lang={lang} /></Shell>;
+
+  // 6. Form Questions Screen (Guided or Simple Mode)
+  return (
+    <Shell schema={schema} mode={mode} setMode={setMode} showTabs={true} lang={lang} setLang={setLang} onOpenLanguage={() => setPhase('language')}>
+      <main className="flow-layout">
+        <section className="flow-main">
+          {mode === 'guided' ? (
+            <GuidedField
+              field={field}
+              current={current}
+              totalFields={schema.fields.length}
+              value={values[field.id] || ''}
+              source={sources[field.id]}
+              document={documents[field.id]}
+              error={issues[field.id]}
+              onChange={updateValue}
+              onChoose={(value) => updateValue(field.id, value)}
+              onUpload={uploadFile}
+              onPreview={setPreview}
+              showOptions={showOptions}
+              setShowOptions={setShowOptions}
+              onBack={() => setCurrent((item) => Math.max(0, item - 1))}
+              onNext={next}
+              atStart={current === 0}
+              atEnd={current === schema.fields.length - 1}
+              lang={lang}
+            />
+          ) : (
+            <SimpleView
+              schema={schema}
+              values={values}
+              sources={sources}
+              documents={documents}
+              issues={issues}
+              onChange={updateValue}
+              onUpload={uploadFile}
+              onPreview={setPreview}
+              onReview={review}
+              lang={lang}
+            />
+          )}
+        </section>
+      </main>
+      {busy && <BusyOverlay />}
+      {preview && <DocumentModal document={preview} onClose={() => setPreview(null)} />}
+      {toast && <div className="toast"><CheckCircle2 size={16} />{toast}</div>}
+    </Shell>
+  );
 }
 
-function GuidedField({ field, value, source, document, error, onChange, onChoose, onUpload, onPreview, showOptions, setShowOptions, onListen, onBack, onNext, atStart, atEnd }) {
+function Shell({ schema, children, mode, setMode, showTabs = false, lang = 'en', setLang, onOpenLanguage }) {
+  const department = schema?.department || (schema?.id === 'nsp' ? 'Department of Higher Education' : 'Citizen Services Dept, GoI');
+  const formTitle = schema?.title || 'Form 14A';
+  const currentLangObj = INDIAN_LANGUAGES.find(l => l.code === lang) || INDIAN_LANGUAGES[0];
+
+  return (
+    <div className="app-shell">
+      <header className="topbar">
+        <div className="topbar-inner">
+          <div className="govt-brand">
+            <GovtDomeLogo />
+            <div className="govt-brand-text">
+              <strong>{formTitle}</strong>
+              <span>{department}</span>
+            </div>
+          </div>
+          <div className="topbar-right-group">
+            {onOpenLanguage && (
+              <button 
+                type="button" 
+                className="lang-pill-btn" 
+                onClick={onOpenLanguage}
+                title="Change language"
+                aria-label="Change language"
+              >
+                <Globe size={18} strokeWidth={2.5} />
+                <span>{currentLangObj.name}</span>
+              </button>
+            )}
+            {showTabs && setMode && (
+              <div className="view-icon-toggle" role="tablist" aria-label="Form view mode">
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={mode === 'guided'}
+                  className={`icon-toggle-btn ${mode === 'guided' ? 'active' : ''}`}
+                  onClick={() => setMode('guided')}
+                  aria-label="Single question view"
+                  title="Single question view"
+                >
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M6 2C4.9 2 4 2.9 4 4v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6H6zm7 7V3.5L18.5 9H13z" />
+                  </svg>
+                </button>
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={mode === 'simple'}
+                  className={`icon-toggle-btn ${mode === 'simple' ? 'active' : ''}`}
+                  onClick={() => setMode('simple')}
+                  aria-label="Full form view"
+                  title="Full form view"
+                >
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M6 2C4.9 2 4 2.9 4 4v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6H6zm7 7V3.5L18.5 9H13zM8 12.5h8v1.8H8v-1.8zm0 3.6h8v1.8H8v-1.8z" />
+                  </svg>
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      </header>
+      <div className="app-content">
+        {children}
+      </div>
+    </div>
+  );
+}
+
+function GovtDomeLogo() {
+  return (
+    <svg className="govt-dome-icon" viewBox="0 0 100 80" fill="#084c82" aria-hidden="true">
+      <path d="M50 4 C49.3 4 48.8 6 48.8 9 L48 15 L52 15 L51.2 9 C51.2 6 50.7 4 50 4 Z" />
+      <circle cx="50" cy="5" r="2.2" />
+      <path d="M44 15 L56 15 C55 17 45 17 44 15 Z" />
+      <rect x="45" y="17" width="10" height="3" rx="0.5" />
+      <path d="M50 20 C36 20 31 34 29 43 L71 43 C69 34 64 20 50 20 Z" />
+      <rect x="25" y="43" width="50" height="4" rx="1" />
+      <rect x="27" y="47" width="46" height="2" />
+      <rect x="28" y="49" width="3.5" height="15" rx="0.5" />
+      <rect x="34" y="49" width="3.5" height="15" rx="0.5" />
+      <rect x="40" y="49" width="3.5" height="15" rx="0.5" />
+      <rect x="46" y="49" width="3.5" height="15" rx="0.5" />
+      <rect x="52" y="49" width="3.5" height="15" rx="0.5" />
+      <rect x="58" y="49" width="3.5" height="15" rx="0.5" />
+      <rect x="64" y="49" width="3.5" height="15" rx="0.5" />
+      <rect x="70" y="49" width="3.5" height="15" rx="0.5" />
+      <rect x="24" y="64" width="52" height="3" rx="0.5" />
+      <path d="M20 69 L80 69 L76 67 L24 67 Z" />
+      <path d="M15 73 L85 73 L81 70 L19 70 Z" />
+      <path d="M10 77 C35 74 65 74 90 77 L87 74 L13 74 Z" />
+    </svg>
+  );
+}
+
+function LanguageSelect({ languages, selected, onSelect, onContinue, lang }) {
+  return (
+    <main className="single-stage language-stage reveal">
+      <div className="stage-intro text-center">
+        <h1>{t(selected, 'choose_language')}</h1>
+        <p>{t(selected, 'choose_language_sub')}</p>
+      </div>
+      <div className="language-grid">
+        {languages.map((item) => {
+          const isSelected = selected === item.code;
+          return (
+            <button
+              key={item.code}
+              type="button"
+              className={`language-tile ${isSelected ? 'selected' : ''}`}
+              onClick={() => onSelect(item.code)}
+            >
+              <span className="lang-native">{item.native}</span>
+              <span className="lang-name">{item.name}</span>
+              {isSelected && <span className="lang-check"><Check size={14} /></span>}
+            </button>
+          );
+        })}
+      </div>
+      <div className="stage-action-center">
+        <button type="button" className="button-primary continue-btn" onClick={onContinue}>
+          <span>{t(selected, 'continue')}</span>
+          <ArrowRight size={18} />
+        </button>
+      </div>
+    </main>
+  );
+}
+
+function AuthMobile({ mobile, setMobile, onBack, onNext, onTrack, lang }) {
+  const isValid = /^\d{10}$/.test(mobile.replace(/\D/g, ''));
+  return (
+    <main className="single-stage auth-stage reveal">
+      <div className="stage-intro text-center">
+        <h1>{t(lang, 'signin_digilocker')}</h1>
+        <p>{t(lang, 'signin_digilocker_sub')}</p>
+      </div>
+      
+      <div className="auth-card-wrapper">
+        <div className="input-card is-standard">
+          <div className="input-card-field">
+            <input
+              type="tel"
+              autoFocus
+              inputMode="numeric"
+              placeholder={t(lang, 'mobile_placeholder')}
+              value={mobile}
+              onChange={(e) => setMobile(e.target.value.replace(/[^\d]/g, '').slice(0, 10))}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && isValid) {
+                  e.preventDefault();
+                  onNext();
+                }
+              }}
+            />
+          </div>
+        </div>
+
+        <button
+          type="button"
+          className="button-primary continue-btn"
+          disabled={!isValid}
+          onClick={onNext}
+        >
+          <span>{t(lang, 'get_otp')}</span>
+          <ArrowRight size={18} />
+        </button>
+
+        <div className="auth-footer-nav">
+          <button type="button" className="text-link-btn" onClick={onBack}>
+            {t(lang, 'change_language')}
+          </button>
+          <button type="button" className="text-link-btn highlight" onClick={onTrack}>
+            {t(lang, 'track_applied')}
+          </button>
+        </div>
+      </div>
+    </main>
+  );
+}
+
+function AuthOTP({ mobile, onBack, onSubmit, busy, lang }) {
+  const [otp, setOtp] = useState('123456');
+  const isValid = otp.length === 6;
+
+  return (
+    <main className="single-stage auth-stage reveal">
+      <div className="stage-intro text-center">
+        <h1>{t(lang, 'enter_verification')}</h1>
+        <p>{t(lang, 'enter_otp_sub')} <strong>+91 {mobile || '9876543210'}</strong></p>
+      </div>
+
+      <div className="auth-card-wrapper">
+        <div className="input-card is-standard">
+          <div className="input-card-field">
+            <input
+              type="text"
+              autoFocus
+              inputMode="numeric"
+              maxLength={6}
+              placeholder="123456"
+              value={otp}
+              onChange={(e) => setOtp(e.target.value.replace(/[^\d]/g, '').slice(0, 6))}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && isValid && !busy) {
+                  e.preventDefault();
+                  onSubmit({ credential: otp, mode: 'otp' });
+                }
+              }}
+            />
+          </div>
+        </div>
+
+        <div className="demo-hint-row">
+          <span className="demo-badge" onClick={() => setOtp('123456')}>
+            {t(lang, 'demo_otp_hint')}
+          </span>
+        </div>
+
+        <button
+          type="button"
+          className="button-primary continue-btn"
+          disabled={!isValid || busy}
+          onClick={() => onSubmit({ credential: otp, mode: 'otp' })}
+        >
+          {busy ? (
+            <>
+              <LoaderCircle className="spin" size={18} />
+              <span>{t(lang, 'verifying_otp')}</span>
+            </>
+          ) : (
+            <>
+              <span>{t(lang, 'verify_fetch')}</span>
+              <ArrowRight size={18} />
+            </>
+          )}
+        </button>
+
+        <div className="auth-footer-nav">
+          <button type="button" className="text-link-btn" onClick={onBack}>
+            {t(lang, 'change_mobile')}
+          </button>
+        </div>
+      </div>
+    </main>
+  );
+}
+
+function FetchingScreen({ lang }) {
+  return (
+    <main className="single-stage connecting-stage reveal">
+      <div className="stage-intro text-center">
+        <div className="fetching-spinner-wrap">
+          <div className="loader-ring" />
+        </div>
+        <h1>{t(lang, 'connecting_title')}</h1>
+        <p>{t(lang, 'connecting_sub')}</p>
+      </div>
+
+      <div className="fetching-checklist">
+        <div className="fetching-item done">
+          <div className="item-icon"><Check size={16} /></div>
+          <div className="item-content">
+            <strong>Aadhaar Card (UIDAI)</strong>
+            <span>{t(lang, 'aadhaar_verified')}</span>
+          </div>
+        </div>
+        <div className="fetching-item done">
+          <div className="item-icon"><Check size={16} /></div>
+          <div className="item-content">
+            <strong>Class 12 Marksheet</strong>
+            <span>{t(lang, 'marksheet_linked')}</span>
+          </div>
+        </div>
+        <div className="fetching-item done">
+          <div className="item-icon"><Check size={16} /></div>
+          <div className="item-content">
+            <strong>Caste & Domicile Certificate</strong>
+            <span>{t(lang, 'category_verified')}</span>
+          </div>
+        </div>
+        <div className="fetching-item done">
+          <div className="item-icon"><Check size={16} /></div>
+          <div className="item-content">
+            <strong>Income Certificate</strong>
+            <span>{t(lang, 'income_verified')}</span>
+          </div>
+        </div>
+      </div>
+    </main>
+  );
+}
+
+function GuidedField({ field, current, totalFields, value, source, document, error, onChange, onChoose, onUpload, onPreview, showOptions, setShowOptions, onBack, onNext, atStart, atEnd, lang }) {
   const isFile = field.type === 'file';
-  const isChoice = field.type === 'category' || field.type === 'yesno';
-  return <article className="question-card reveal"><div className="question-type">{isFile ? 'Document check' : isChoice ? 'Choose an option' : field.type === 'date' ? 'Date' : 'Your answer'}</div><div className="field-prompt"><Bot size={16} /><span>{fieldPrompt(field, value, source, document)}</span></div><h2>{field.label}</h2><p className="question-help">{field.help}</p><div className="answer-area"><FieldControl field={field} value={value} document={document} onChange={onChange} onChoose={onChoose} onUpload={onUpload} onPreview={onPreview} error={error} /><div className="field-utility">{!isFile && <button className="voice-button" onClick={onListen}><Mic size={15} /> Speak instead</button>}{source && <span className="source-pill"><Sparkles size={14} /> Matched from {source}</span>}{isChoice && <button className="options-button" onClick={() => setShowOptions(!showOptions)}><CircleHelp size={14} /> {showOptions ? 'Hide choices' : 'Show choices'}</button>}</div>{(value || document) && <span className="confirm-chip"><CheckCircle2 size={14} /> {source ? 'Prefilled — review before continuing' : 'Answer captured'}</span>}{showOptions && field.options && <div className="option-cloud">{field.options.map((option) => <button className={value === option ? 'selected' : ''} key={option} onClick={() => onChoose(option)}>{option}</button>)}</div>}{error && <p className="field-error">{error}</p>}</div><div className="question-actions"><button className="button button-quiet" disabled={atStart} onClick={onBack}><ArrowLeft size={16} /> Back</button><button className="button button-primary" onClick={onNext}>{atEnd ? 'Review application' : 'Continue'} <ArrowRight size={17} /></button></div></article>;
+  const labelText = tField(lang, field.id, field.label);
+
+  return (
+    <article className={`question-card reveal ${isFile && document ? 'has-doc-preview' : ''}`} key={field.id}>
+      <div className={`question-body ${isFile && document ? 'doc-mode-body' : ''}`}>
+        <div className="question-header-group">
+          <h2>{labelText}</h2>
+        </div>
+        <div className="answer-area">
+          <FieldControl
+            field={field}
+            value={value}
+            source={source}
+            document={document}
+            onChange={onChange}
+            onChoose={onChoose}
+            onUpload={onUpload}
+            onPreview={onPreview}
+            onSubmit={onNext}
+            error={error}
+            lang={lang}
+          />
+          {error && <p className="field-error">{error}</p>}
+        </div>
+      </div>
+      <footer className="question-actions">
+        <button
+          type="button"
+          className="nav-text-btn"
+          disabled={atStart}
+          onClick={onBack}
+          aria-label="Previous question"
+        >
+          {t(lang, 'prev')}
+        </button>
+        <span className="nav-counter">{current + 1}/{totalFields}</span>
+        <button
+          type="button"
+          className="nav-text-btn"
+          onClick={onNext}
+          aria-label={atEnd ? 'Review application' : 'Next question'}
+        >
+          {atEnd ? t(lang, 'review_btn') : t(lang, 'next')}
+        </button>
+      </footer>
+    </article>
+  );
 }
 
 function dateForInput(value) { return /^\d{2}\/\d{2}\/\d{4}$/.test(String(value)) ? String(value).split('/').reverse().join('-') : value || ''; }
 function displayDate(value) { return /^\d{4}-\d{2}-\d{2}$/.test(String(value)) ? String(value).split('-').reverse().join('/') : value; }
 
-function FieldControl({ field, value, document, onChange, onChoose, onUpload, onPreview, error }) {
-  if (field.type === 'file') return <div className={`document-card ${error ? 'has-error' : ''}`}><div className="document-icon"><FileText size={23} /></div><div><strong>{document?.name || 'No document added'}</strong><span>{document?.meta || 'Choose a PDF or image'}</span><span className="document-verified"><CheckCircle2 size={14} /> {document?.status || 'Ready to add'} · {document?.source || 'Device'}</span></div><div className="document-actions"><button className="text-button small" disabled={!document} onClick={() => onPreview(document)}>Preview</button><label className="upload-button"><Upload size={14} /> {document ? 'Replace' : 'Add file'}<input type="file" accept=".pdf,image/*" onChange={(event) => event.target.files?.[0] && onUpload(field.id, event.target.files[0])} /></label></div></div>;
-  if (field.type === 'yesno') return <div className="choice-row">{field.options.map((option) => <button key={option} onClick={() => onChoose(option)} className={value === option ? 'selected' : ''}>{value === option && <Check size={16} />}{option}</button>)}</div>;
-  if (field.type === 'category') return <div className="select-wrap"><select className={error ? 'input-error' : ''} value={value} onChange={(event) => onChange(field.id, event.target.value)}><option value="">{field.placeholder}</option>{field.options.map((option) => <option key={option}>{option}</option>)}</select></div>;
-  if (field.type === 'date') return <label className={`input-wrap ${error ? 'input-error' : ''}`}><input type="date" value={dateForInput(value)} onChange={(event) => onChange(field.id, event.target.value)} /></label>;
-  return <label className={`input-wrap ${error ? 'input-error' : ''}`}><input value={value} inputMode={field.inputMode || (field.type === 'number' ? 'numeric' : undefined)} placeholder={field.placeholder} onChange={(event) => onChange(field.id, event.target.value)} />{field.suffix && <span>{field.suffix}</span>}</label>;
+function FieldControl({ field, value, source, document, onChange, onChoose, onUpload, onPreview, onSubmit, error, lang }) {
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter' && onSubmit) {
+      e.preventDefault();
+      onSubmit();
+    }
+  };
+
+  const badgeText = t(lang, 'fetched_via_digilocker');
+
+  if (field.type === 'file') {
+    if (document) {
+      return (
+        <div className={`document-preview-container ${error ? 'has-error' : ''}`}>
+          <div className={`input-card ${source ? 'is-digilocker' : 'is-standard'}`} style={{ cursor: 'pointer' }} onClick={() => onPreview(document)}>
+            <div className="mockup-paper-sheet" role="button" tabIndex={0}>
+              <div className="mockup-sheet-inner">
+                <div className="sheet-heading">Cardboard, Inc.</div>
+                <p className="sheet-sub">We are hiring a Growth Intern to come and run influencer marketing + UGC with us at <span className="sheet-link">Cardboard</span></p>
+                <p className="sheet-p">This is not a <em>"support the marketing team"</em> internship. You too will own the creator function: the sourcing, the outreach, the negotiation, the briefs, the tracker, the budget, and the numbers. You will personally control a five-figure USD monthly creator budget within your first few months.</p>
+                <div className="sheet-section-title">What you'll own?</div>
+                <ol className="sheet-list">
+                  <li><strong>1. Sourcing at volume:</strong> Build and maintain a pipeline of hundreds of creators across different viable niches, across India, the US, SEA, LATAM, and Europe. Find the non-obvious ones before anyone else does. Mid-tier and micro creators with real comment sections beat vanity follower counts every time.</li>
+                  <li><strong>2. Outreach and closing:</strong> Write DMs and emails that get replies from people who ignore brand outreach for a living. Follow up without being annoying. Negotiate rates down without making it feel like a lowball. Get people from "interesting" to "posting" in days, not weeks.</li>
+                  <li><strong>3. Deal structuring:</strong> Base fee, performance-based, bonuses and incentives, long-term retainers, multi-content deals. Know which structure to use for which creator and defend the choice.</li>
+                  <li><strong>4. Campaign ops:</strong> Write briefs creators actually follow. Manage 100-200 open conversations without dropping anyone. Track live status, delivery, revisions, posting, and much more.</li>
+                  <li><strong>5. Content and trend strategy:</strong> You'll help us decide what videos get made, not just who makes them. Spot a converting format you want to do, and get it shipped by creators fast.</li>
+                  <li><strong>6. Performance and budget:</strong> Own the dashboard: cost per video, cost per thousand views, reply rate, close rate, time-to-live, signups and activations per creator. Reallocate the efforts weekly based on what's actually working. Tell us when something isn't.</li>
+                  <li><strong>7. Community and events:</strong> Help run dinners, Cardboard café popups, and founder/creator gatherings with people you currently follow on the internet and can learn from.</li>
+                </ol>
+                <div className="sheet-section-title" style={{ marginTop: '10px' }}>Who we're looking for?</div>
+                <p className="sheet-p">You are terminally online. You understand why a certain content format kicks off, you know when a creator is a "right fit," and you get the internet like the back of your hand.</p>
+                <div className="sheet-section-title" style={{ marginTop: '8px' }}>You should have:</div>
+              </div>
+            </div>
+            {source && (
+              <div className="input-card-badge">
+                <BadgeIcon />
+                <span>{badgeText}</span>
+              </div>
+            )}
+          </div>
+        </div>
+      );
+    }
+    return (
+      <label className={`minimal-upload-zone ${error ? 'has-error' : ''}`}>
+        <div className="upload-bg-icon">
+          <Upload size={40} />
+        </div>
+        <span className="upload-main-text">{t(lang, 'upload_doc')} {field.shortLabel || 'document'}</span>
+        <span className="upload-sub-text">{t(lang, 'upload_sub')}</span>
+        <input type="file" accept=".pdf,image/*" onChange={(event) => event.target.files?.[0] && onUpload(field.id, event.target.files[0])} />
+      </label>
+    );
+  }
+  if (field.type === 'yesno') {
+    return (
+      <div className="choice-row">
+        {field.options.map((option) => {
+          const displayOption = option === 'Yes' ? t(lang, 'yes') : option === 'No' ? t(lang, 'no') : option;
+          return (
+            <button
+              key={option}
+              type="button"
+              onClick={() => onChoose(option)}
+              className={`choice-tile ${value === option ? 'selected' : ''}`}
+            >
+              {value === option && <Check size={16} />}
+              <span>{displayOption}</span>
+            </button>
+          );
+        })}
+      </div>
+    );
+  }
+  if (field.type === 'category') {
+    return (
+      <div className={`input-card ${source ? 'is-digilocker' : 'is-standard'} ${error ? 'input-error' : ''}`}>
+        <div className="input-card-field">
+          <select value={value} onChange={(event) => onChange(field.id, event.target.value)}>
+            <option value="">{field.placeholder}</option>
+            {field.options.map((option) => <option key={option}>{option}</option>)}
+          </select>
+        </div>
+        {source && (
+          <div className="input-card-badge">
+            <BadgeIcon />
+            <span>{badgeText}</span>
+          </div>
+        )}
+      </div>
+    );
+  }
+  if (field.type === 'date') {
+    return (
+      <div className={`input-card ${source ? 'is-digilocker' : 'is-standard'} ${error ? 'input-error' : ''}`}>
+        <div className="input-card-field">
+          <input type="date" value={dateForInput(value)} onKeyDown={handleKeyDown} onChange={(event) => onChange(field.id, event.target.value)} />
+        </div>
+        {source && (
+          <div className="input-card-badge">
+            <BadgeIcon />
+            <span>{badgeText}</span>
+          </div>
+        )}
+      </div>
+    );
+  }
+  return (
+    <div className={`input-card ${source ? 'is-digilocker' : 'is-standard'} ${error ? 'input-error' : ''}`}>
+      <div className="input-card-field">
+        <input
+          value={value}
+          autoFocus
+          inputMode={field.inputMode || (field.type === 'number' ? 'numeric' : undefined)}
+          placeholder={field.placeholder}
+          onKeyDown={handleKeyDown}
+          onChange={(event) => onChange(field.id, event.target.value)}
+        />
+        {field.suffix && <span className="input-suffix">{field.suffix}</span>}
+      </div>
+      {source && (
+        <div className="input-card-badge">
+          <BadgeIcon />
+          <span>{badgeText}</span>
+        </div>
+      )}
+    </div>
+  );
 }
 
-function SimpleView({ schema, values, sources, documents, issues, onChange, onUpload, onPreview, onReview }) { return <article className="simple-card reveal"><div className="simple-card-head"><div><span className="eyebrow"><PanelRight size={14} /> Edit application</span><h2>Everything in one place</h2></div><p>Fields with a mint marker were pre-filled from a matched document.</p></div><div className="simple-grid">{schema.fields.map((field) => <div className="simple-field" key={field.id}><label>{field.shortLabel}{sources[field.id] && <small><Sparkles size={12} /> {sources[field.id]}</small>}</label><FieldControl field={field} value={values[field.id] || ''} document={documents[field.id]} onChange={onChange} onChoose={(next) => onChange(field.id, next)} onUpload={onUpload} onPreview={onPreview} error={issues[field.id]} />{issues[field.id] && <p className="field-error">{issues[field.id]}</p>}</div>)}</div><div className="simple-footer"><span><LockKeyhole size={15} /> You can still edit anything after review.</span><button className="button button-primary" onClick={onReview}>Review application <ArrowRight size={17} /></button></div></article> }
+function BadgeIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <rect x="3" y="4" width="18" height="15" rx="3.5" fill="currentColor" fillOpacity="0.2" />
+      <rect x="3" y="4" width="18" height="15" rx="3.5" stroke="currentColor" strokeWidth="2" />
+      <circle cx="8.5" cy="11.5" r="2" fill="currentColor" />
+      <path d="M13.5 10H17.5M13.5 13H16.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+    </svg>
+  );
+}
 
-function ChatPanel({ chat, draft, setDraft, busy, language, setLanguage, tone, setTone, onAsk, onClose, field }) { return <aside className="chat-panel reveal delay-1"><header><div><span className="guide-avatar"><Bot size={18} /></span><span><strong>Setu Guide</strong><small><i /> Local AI assistant</small></span></div><button onClick={onClose} aria-label="Close chat"><X size={17} /></button></header><div className="guide-options"><button className={tone === 'simple' ? 'active' : ''} onClick={() => setTone('simple')}>Simple</button><button className={tone === 'detailed' ? 'active' : ''} onClick={() => setTone('detailed')}>Detailed</button><button className={language === 'Hindi' ? 'active' : ''} onClick={() => setLanguage(language === 'English' ? 'Hindi' : 'English')}>{language}</button></div><div className="chat-scroll">{chat.map((item, index) => <div className={`message ${item.role}`} key={`${item.role}-${index}`}>{item.role === 'assistant' && <Bot size={14} />}<p>{item.text}</p></div>)}{busy && <div className="message assistant typing"><Bot size={14} /><p><i /><i /><i /></p></div>}</div><div className="suggestion-row"><button onClick={() => onAsk('Explain this field')}>Explain this</button>{field?.options && <button onClick={() => onAsk('Show options')}>Show choices</button>}<button onClick={() => onAsk('Use DigiLocker documents')}>Use documents</button></div><form className="chat-input" onSubmit={(event) => { event.preventDefault(); onAsk(); }}><input value={draft} onChange={(event) => setDraft(event.target.value)} placeholder="Ask Setu anything…" /><button disabled={!draft.trim() || busy} aria-label="Send message"><Send size={16} /></button></form><footer><LockKeyhole size={12} /> Mock guide · no personal data leaves this device</footer></aside> }
+function SimpleView({ schema, values, sources, documents, issues, onChange, onUpload, onPreview, onReview, lang }) {
+  return (
+    <article className="simple-card reveal">
+      <div className="simple-grid">
+        {schema.fields.map((field) => (
+          <div className="simple-field" key={field.id}>
+            <div className="simple-field-label">
+              <span>{tField(lang, field.id, field.label)}</span>
+            </div>
+            <FieldControl
+              field={field}
+              value={values[field.id] || ''}
+              source={sources[field.id]}
+              document={documents[field.id]}
+              onChange={onChange}
+              onChoose={(next) => onChange(field.id, next)}
+              onUpload={onUpload}
+              onPreview={onPreview}
+              error={issues[field.id]}
+              lang={lang}
+            />
+            {issues[field.id] && <p className="field-error">{issues[field.id]}</p>}
+          </div>
+        ))}
+      </div>
+      <div className="simple-footer">
+        <button type="button" className="button-primary" onClick={onReview}>
+          <span>{t(lang, 'continue_to_review')}</span>
+          <ArrowRight size={17} />
+        </button>
+      </div>
+    </article>
+  );
+}
 
-function Consent({ onContinue }) { const [checked, setChecked] = useState(false); return <main className="single-stage reveal"><div className="stage-intro"><div className="eyebrow"><ShieldCheck size={14} /> Before we begin</div><h1>Let your documents<br /><em>do the remembering.</em></h1><p>Connect once to reduce repetitive typing. You will see exactly what was found and can edit every answer before submission.</p></div><section className="consent-card"><div><span className="consent-icon"><LockKeyhole size={24} /></span><h2>You stay in control</h2><p>This prototype uses synthetic documents only. No real DigiLocker account, government credential or identity data is accessed.</p><label className="consent-check"><input type="checkbox" checked={checked} onChange={(event) => setChecked(event.target.checked)} /><span>I understand this is a concept prototype and consent to use the displayed synthetic document data.</span></label><button className="button button-primary" onClick={onContinue} disabled={!checked}>Continue to mock sign-in <ArrowRight size={17} /></button></div><div className="consent-docs"><span>Available in this demo</span>{['Identity record · name, date of birth', 'Income certificate · annual income', 'Community certificate · category'].map((line) => <p key={line}><FileText size={16} /> {line}<CheckCircle2 size={15} /></p>)}</div></section></main> }
-function Auth({ onSubmit, busy }) { const [mode, setMode] = useState('otp'); const [mobile, setMobile] = useState('9876543210'); const [credential, setCredential] = useState('123456'); return <main className="single-stage reveal"><div className="stage-intro"><div className="eyebrow"><LockKeyhole size={14} /> Mock DigiLocker sign-in</div><h1>Connect once.<br /><em>Reuse what you have.</em></h1><p>This step mirrors the handoff a real document source would need. Use the demo OTP <b>123456</b>, or enter any password in password mode.</p></div><section className="auth-card"><div className="auth-top"><span className="auth-logo"><Landmark size={19} /></span><div><strong>DigiLocker</strong><small>Mock document source · synthetic account</small></div><span className="prototype-chip">Demo only</span></div><div className="auth-tabs"><button className={mode === 'otp' ? 'active' : ''} onClick={() => { setMode('otp'); setCredential('123456'); }}>One-time password</button><button className={mode === 'password' ? 'active' : ''} onClick={() => { setMode('password'); setCredential('demo-pass'); }}>Password</button></div><label className="auth-label">Mobile number<input className="auth-input" inputMode="numeric" value={mobile} onChange={(event) => setMobile(event.target.value)} /></label><label className="auth-label">{mode === 'otp' ? 'Six-digit OTP' : 'Password'}<input className="auth-input" type={mode === 'password' ? 'password' : 'text'} inputMode={mode === 'otp' ? 'numeric' : undefined} value={credential} onChange={(event) => setCredential(event.target.value)} /></label><button className="button button-primary auth-submit" onClick={() => onSubmit({ mobile, mode, credential })} disabled={busy}>{busy ? <><LoaderCircle className="spin" size={17} /> Connecting…</> : <>Continue securely <ArrowRight size={17} /></>}</button><p className="auth-note"><ShieldCheck size={14} /> No real login, OTP or identity data is sent anywhere.</p></section></main> }
-function Review({ schema, values, sources, documents, payload, mismatch, onMismatch, onEdit, onSubmit }) { return <main className="single-stage review-stage reveal"><div className="stage-intro"><div className="eyebrow"><CheckCircle2 size={14} /> Final check</div><h1>Review before<br /><em>you send.</em></h1><p>This is exactly what the local submission API will validate.</p></div><section className="review-card"><header><div><h2>{schema.title}</h2><p>Check each answer and attached document.</p></div><button className="text-button" onClick={onEdit}>Edit answers <ArrowRight size={15} /></button></header><div className="review-grid">{schema.fields.map((field) => <div className="review-item" key={field.id}><small>{field.shortLabel}</small><strong>{field.type === 'file' ? documents[field.id]?.name : field.type === 'date' ? displayDate(values[field.id]) : values[field.id] || 'Not provided'}</strong>{sources[field.id] && <span><Sparkles size={12} /> {sources[field.id]}</span>}</div>)}</div><details className="payload-preview"><summary>View backend payload</summary><pre>{JSON.stringify(payload, null, 2)}</pre></details><label className="mismatch-toggle"><input type="checkbox" checked={mismatch} onChange={(event) => onMismatch(event.target.checked)} /><span><b>Demo a document mismatch</b><small>See the API’s clear failure state without losing your answers.</small></span></label><footer><span><LockKeyhole size={15} /> Simulated API request · no data is sent to a government service</span><button className="button button-primary" onClick={onSubmit}>Submit application <ArrowRight size={17} /></button></footer></section></main> }
-function LoadingScreen({ label }) { return <main className="loading-screen"><div className="loader-ring" /><h2>{label}…</h2><p>We are preparing a safe, synthetic response for this prototype.</p></main> }
-function Success({ schema, submission, onTrack, onHome }) { return <main className="outcome-stage reveal"><div className="outcome-mark success"><Check size={31} /></div><div className="eyebrow"><CheckCircle2 size={14} /> Mock API response · 200</div><h1>{schema.id === 'nsp' ? <>Your application<br /><em>is on its way.</em></> : <>Your request<br /><em>is on its way.</em></>}</h1><p>The local submission service accepted your application and generated a reference number.</p><div className="reference"><span>Reference number</span><b>{submission?.reference}</b></div><div className="outcome-actions"><button className="button button-primary" onClick={onTrack}>Track application <ArrowRight size={17} /></button><button className="button button-quiet" onClick={onHome}>Back to forms</button></div></main> }
-function Failure({ issues, onReview }) { return <main className="outcome-stage reveal"><div className="outcome-mark failure"><X size={31} /></div><div className="eyebrow warning"><CircleHelp size={14} /> Mock API response · 422</div><h1>One document needs<br /><em>a closer look.</em></h1><p>Your answers have been kept safely. The submission API returned a clear, field-level reason to fix before retrying.</p><div className="failure-detail">{Object.entries(issues).map(([key, message]) => <p key={key}><FileText size={16} /><span><b>{key}</b>{message}</span></p>)}</div><button className="button button-primary" onClick={onReview}>Review and fix <ArrowRight size={17} /></button></main> }
-function Status({ status, onHome }) { return <main className="single-stage review-stage reveal"><div className="stage-intro"><div className="eyebrow"><Zap size={14} /> Application tracker</div><h1>Know where things<br /><em>stand.</em></h1><p>Your reference <b>{status?.reference}</b> is stored in the local prototype API.</p></div><section className="status-card">{status?.timeline.map((item) => <div className={`timeline-item ${item.state}`} key={item.title}><i>{item.state === 'complete' ? <Check size={13} /> : null}</i><div><h3>{item.title}</h3><p>{item.detail}</p></div></div>)}<button className="button button-quiet" onClick={onHome}><ArrowLeft size={16} /> Back to forms</button></section></main> }
-function DocumentModal({ document, onClose }) { return <div className="modal-backdrop" onMouseDown={onClose}><section className="document-modal reveal" onMouseDown={(event) => event.stopPropagation()}><header><div><span className="eyebrow"><FileText size={14} /> Synthetic document preview</span><h2>{document?.name}</h2><p>{document?.meta} · {document?.source}</p></div><button onClick={onClose} aria-label="Close preview"><X size={18} /></button></header><div className="paper"><div className="paper-head"><span>FORMSETU DOCUMENT VIEWER</span><b>DEMO COPY</b></div><h3>{document?.name}</h3><p>This preview is intentionally synthetic. It is shown so the applicant can confirm the right document before submission.</p><i /><i /><i className="short" /><i /><i className="short" /><footer><span>Document ID · DEMO-2026</span><span>{document?.status || 'Ready'}</span></footer></div></section></div> }
-function BusyOverlay() { return <div className="busy-overlay"><LoaderCircle className="spin" size={20} /> Checking the form schema…</div> }
+function Review({ schema, values, sources, documents, payload, mismatch, onMismatch, onEdit, onSubmit, lang }) { 
+  return (
+    <main className="single-stage review-stage reveal">
+      <div className="stage-intro">
+        
+        <h1>{t(lang, 'review_title')}<br /><em>{t(lang, 'review_title_em')}</em></h1>
+        
+      </div>
+      <section className="review-card">
+        <header>
+          <div>
+            <h2>{schema.title}</h2>
+            <p>{t(lang, 'check_each_answer')}</p>
+          </div>
+          <button className="doc-replace-btn" onClick={onEdit}>
+            {t(lang, 'edit_answers')} <ArrowRight size={15} />
+          </button>
+        </header>
+        <div className="review-grid">
+          {schema.fields.map((field) => (
+            <div className="review-item" key={field.id}>
+              <small>{field.shortLabel}</small>
+              <div className="review-val">
+                <strong>{field.type === 'file' ? (documents[field.id]?.name || t(lang, 'not_provided')) : field.type === 'date' ? displayDate(values[field.id]) : (values[field.id] === 'Yes' ? t(lang, 'yes') : values[field.id] === 'No' ? t(lang, 'no') : values[field.id] || t(lang, 'not_provided'))}</strong>
+                {sources[field.id] && (
+                  <span><Sparkles size={12} /> {sources[field.id] === 'digilocker' ? 'DigiLocker' : sources[field.id]}</span>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+        <details className="payload-preview">
+          <summary>{t(lang, 'view_payload')}</summary>
+          <pre>{JSON.stringify(payload, null, 2)}</pre>
+        </details>
+        <label className="mismatch-toggle">
+          <input type="checkbox" checked={mismatch} onChange={(event) => onMismatch(event.target.checked)} />
+          <span>
+            <b>{t(lang, 'demo_mismatch')}</b>
+            <small>{t(lang, 'demo_mismatch_sub')}</small>
+          </span>
+        </label>
+        <footer>
+          <span><LockKeyhole size={15} /> {t(lang, 'simulated_disclaimer')}</span>
+          <button className="button button-primary" onClick={onSubmit}>
+            {t(lang, 'submit_application')} <ArrowRight size={17} />
+          </button>
+        </footer>
+      </section>
+    </main>
+  );
+}
+
+function LoadingScreen({ label }) { 
+  return (
+    <main className="loading-screen">
+      <div className="loader-ring" />
+      <h2>{label}</h2>
+      <p>We are preparing a safe, synthetic response for this prototype.</p>
+    </main>
+  );
+}
+
+function Success({ schema, submission, onTrack, onRestart, lang }) { 
+  return (
+    <main className="outcome-stage reveal">
+      <div className="outcome-mark success"><Check size={31} /></div>
+      
+      <h1>
+        {schema.id === 'nsp' ? <>Your scholarship application<br /><em>is on its way.</em></> : <>Your request<br /><em>is on its way.</em></>}
+      </h1>
+      
+      <div className="reference">
+        <span>Application Reference Number</span>
+        <b>{submission?.reference}</b>
+      </div>
+      <div className="outcome-actions">
+        <button className="button button-primary" onClick={onTrack}>
+          Track application status <ArrowRight size={17} />
+        </button>
+        <button className="button button-quiet" onClick={onRestart}>
+          {t(lang, 'start_new_app')}
+        </button>
+      </div>
+    </main>
+  );
+}
+
+function Failure({ issues, onReview, lang }) { 
+  return (
+    <main className="outcome-stage reveal">
+      <div className="outcome-mark failure"><X size={31} /></div>
+      <div className="eyebrow warning"><CircleHelp size={14} /> Mock API response · 422</div>
+      <h1>One document needs<br /><em>a closer look.</em></h1>
+      <p>Your answers have been kept safely. The submission API returned a clear, field-level reason to fix before retrying.</p>
+      <div className="failure-detail">
+        {Object.entries(issues).map(([key, message]) => (
+          <p key={key}>
+            <FileText size={16} />
+            <span><b>{key}</b>{message}</span>
+          </p>
+        ))}
+      </div>
+      <button className="button button-primary" onClick={onReview}>
+        Review and fix <ArrowRight size={17} />
+      </button>
+    </main>
+  );
+}
+
+function Status({ status, onRestart, lang }) { 
+  return (
+    <main className="single-stage status-stage reveal">
+      <div className="stage-intro text-center">
+        
+        <h1>{t(lang, 'app_status_title')}</h1>
+        <p>Reference: <strong>{status?.reference || 'NSP-2026-88192'}</strong></p>
+      </div>
+      
+      <section className="status-card">
+        <div className="status-header">
+          <div>
+            <span className="status-badge-active">{t(lang, 'in_progress')}</span>
+            <h2 className="status-form-title">National Scholarship Application</h2>
+          </div>
+          <span className="status-ref-text">Ref: {status?.reference}</span>
+        </div>
+
+        <div className="timeline-wrap">
+          {(status?.timeline || [
+            { title: 'Application Submitted', detail: 'Application received and registered on portal.', state: 'complete' },
+            { title: 'DigiLocker Verification', detail: 'Identity, marksheet, and income records verified.', state: 'complete' },
+            { title: 'Department Scrutiny', detail: 'Verification officer reviewing eligibility.', state: 'complete' },
+            { title: 'Final Approval & Disbursal', detail: 'Sanction order and direct bank transfer.', state: 'pending' }
+          ]).map((item, idx) => (
+            <div className={`timeline-item ${item.state}`} key={idx}>
+              <div className="timeline-dot">
+                {item.state === 'complete' ? <Check size={14} /> : <span>{idx + 1}</span>}
+              </div>
+              <div className="timeline-info">
+                <h3>{item.title}</h3>
+                <p>{item.detail}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div className="status-actions">
+          <button className="button button-primary" onClick={onRestart}>
+            <ArrowLeft size={16} /> {t(lang, 'start_new_app')}
+          </button>
+        </div>
+      </section>
+    </main>
+  );
+}
+
+function DocumentModal({ document, onClose }) { 
+  return (
+    <div className="modal-backdrop" onMouseDown={onClose}>
+      <section className="document-modal reveal" onMouseDown={(event) => event.stopPropagation()}>
+        <header>
+          <div>
+            <span className="eyebrow"><FileText size={14} /> Synthetic document preview</span>
+            <h2>{document?.name}</h2>
+            <p>{document?.meta} · {document?.source}</p>
+          </div>
+          <button onClick={onClose} aria-label="Close preview"><X size={18} /></button>
+        </header>
+        <div className="paper">
+          <div className="paper-head">
+            <span>FORMSETU DOCUMENT VIEWER</span>
+            <b>DEMO COPY</b>
+          </div>
+          <h3>{document?.name}</h3>
+          <p>This preview is intentionally synthetic. It is shown so the applicant can confirm the right document before submission.</p>
+          <i /><i /><i className="short" /><i /><i className="short" />
+          <footer>
+            <span>Document ID · DEMO-2026</span>
+            <span>{document?.status || 'Ready'}</span>
+          </footer>
+        </div>
+      </section>
+    </div>
+  );
+}
+
+function BusyOverlay() { 
+  return (
+    <div className="busy-overlay">
+      <LoaderCircle className="spin" size={20} /> Loading…
+    </div>
+  );
+}
 
 export default App;
