@@ -1,8 +1,8 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState, useRef } from 'react';
 import {
   ArrowLeft, ArrowRight, Check, CheckCircle2, CircleHelp,
   FileText, Landmark, LoaderCircle, LockKeyhole, PanelRight,
-  ShieldCheck, Sparkles, Upload, X, Zap, Globe, Smartphone, KeyRound, Building2
+  ShieldCheck, Sparkles, Upload, X, Zap, Globe, Smartphone, KeyRound, Building2, Mic
 } from 'lucide-react';
 import { api } from './api.js';
 import { FORM_SCHEMAS, buildSubmissionPayload, getInitialState } from './data/forms.js';
@@ -703,6 +703,66 @@ function GuidedField({ field, current, totalFields, value, source, document, err
 function dateForInput(value) { return /^\d{2}\/\d{2}\/\d{4}$/.test(String(value)) ? String(value).split('/').reverse().join('-') : value || ''; }
 function displayDate(value) { return /^\d{4}-\d{2}-\d{2}$/.test(String(value)) ? String(value).split('-').reverse().join('/') : value; }
 
+
+const SpeechRecognitionAPI = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+function MicButton({ onResult }) {
+  const [recording, setRecording] = useState(false);
+  const recognitionRef = useRef(null);
+
+  const startRecording = (e) => {
+    e.preventDefault();
+    if (!SpeechRecognitionAPI) {
+      alert("Speech Recognition is not supported in your browser.");
+      return;
+    }
+    try {
+      const recognition = new SpeechRecognitionAPI();
+      recognition.continuous = false;
+      recognition.interimResults = false;
+      
+      recognition.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        onResult(transcript);
+      };
+
+      recognition.onend = () => {
+        setRecording(false);
+      };
+
+      recognition.start();
+      recognitionRef.current = recognition;
+      setRecording(true);
+    } catch (err) {
+      console.error(err);
+      setRecording(false);
+    }
+  };
+
+  const stopRecording = (e) => {
+    e.preventDefault();
+    if (recognitionRef.current && recording) {
+      recognitionRef.current.stop();
+    }
+    setRecording(false);
+  };
+
+  return (
+    <button 
+      className={`mic-button ${recording ? 'recording' : ''}`}
+      onMouseDown={startRecording}
+      onMouseUp={stopRecording}
+      onMouseLeave={stopRecording}
+      onTouchStart={startRecording}
+      onTouchEnd={stopRecording}
+      type="button"
+      title="Hold to speak"
+    >
+      <Mic size={18} />
+    </button>
+  );
+}
+
 function FieldControl({ field, value, source, document, onChange, onChoose, onUpload, onPreview, onSubmit, error, lang }) {
   const handleKeyDown = (e) => {
     if (e.key === 'Enter' && onSubmit) {
@@ -787,6 +847,7 @@ function FieldControl({ field, value, source, document, onChange, onChoose, onUp
             <option value="">{field.placeholder}</option>
             {field.options.map((option) => <option key={option}>{option}</option>)}
           </select>
+        <MicButton onResult={(t) => onChange(field.id, t)} />
         </div>
         {source && (
           <div className="input-card-badge">
@@ -802,6 +863,7 @@ function FieldControl({ field, value, source, document, onChange, onChoose, onUp
       <div className={`input-card ${source ? 'is-digilocker' : 'is-standard'} ${error ? 'input-error' : ''}`}>
         <div className="input-card-field">
           <input type="date" value={dateForInput(value)} onKeyDown={handleKeyDown} onChange={(event) => onChange(field.id, event.target.value)} />
+        <MicButton onResult={(t) => onChange(field.id, t)} />
         </div>
         {source && (
           <div className="input-card-badge">
@@ -824,6 +886,7 @@ function FieldControl({ field, value, source, document, onChange, onChoose, onUp
           onChange={(event) => onChange(field.id, event.target.value)}
         />
         {field.suffix && <span className="input-suffix">{field.suffix}</span>}
+      <MicButton onResult={(t) => onChange(field.id, t)} />
       </div>
       {source && (
         <div className="input-card-badge">
