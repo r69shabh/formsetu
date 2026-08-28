@@ -87,7 +87,7 @@ It reimagines public portals by unifying synthetic DigiLocker authentication, 22
 4. **Interactive Form Filling**: Citizen navigates through the form using either Guided mode (one question at a time) or Simple mode (full document view). Any field can be dictated by holding the mic icon.
 5. **Document Verification**: Class 10/12 marksheet and income certificates can be viewed in true A4 ratio or replaced via dropzones.
 6. **Final Review**: Form displays a clean summary of all verified and manual inputs.
-7. **Submission & Tracking**: Submits the validated schema to the backend, receives a permanent reference number (`NSP-2026-XXXXX`), and displays the official status timeline.
+7. **Submission & Tracking**: Submits the validated schema to the backend, receives a permanent reference number (`ITD-2026-XXXXX`), and displays the official status timeline.
 
 ---
 
@@ -100,12 +100,12 @@ The backend is powered by **Express 5** and **Zod** (`server/index.js`).
 
 Returns the full schema definition including field types, validation rules, DigiLocker mapping paths, and localized prompts.
 
-**Example Response (`/api/forms/nsp`):**
+**Example Response (`/api/forms/form14a`):**
 ```json
 {
   "id": "nsp",
-  "title": "Scholarship application",
-  "service": "Department of Higher Education",
+  "title": "Form 14A",
+  "service": "Income Tax Dept, GoI",
   "fields": [
     {
       "id": "name",
@@ -227,8 +227,8 @@ Validates the completed form against schema rules and produces the official norm
 ```json
 {
   "status": "success",
-  "reference": "NSP-2026-X9K2A",
-  "referenceNumber": "NSP-2026-X9K2A",
+  "reference": "ITD-2026-X9K2A",
+  "referenceNumber": "ITD-2026-X9K2A",
   "stage": "Document check",
   "message": "Your prototype submission was accepted.",
   "payload": {
@@ -252,7 +252,7 @@ Validates the completed form against schema rules and produces the official norm
 **Response:**
 ```json
 {
-  "reference": "NSP-2026-X9K2A",
+  "reference": "ITD-2026-X9K2A",
   "formId": "nsp",
   "stage": "Document check",
   "createdAt": "2026-08-28T02:15:00.000Z",

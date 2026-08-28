@@ -1,76 +1,79 @@
-// Phase 2 keeps the form contract intentionally small: the renderer only
-// needs the field metadata below, while the mock response stands in for a
-// real DigiLocker integration during local development.
+// Schema-driven form configurations for FormSetu
 export const MOCK_DIGILOCKER = {
   digilocker: {
     identity: {
       fullName: { value: 'Ananya Sharma', source: 'Aadhaar card' },
       dob: { value: '2002-09-05', source: 'Aadhaar card' },
+      pan: { value: 'ABCDE1234F', source: 'Income Tax Dept' },
       state: { value: 'Maharashtra', source: 'Aadhaar card' }
     },
-    caste: {
-      category: { value: 'OBC-NCL', source: 'Caste certificate' }
+    tax: {
+      category: { value: 'Individual (Resident)', source: 'Income Tax Dept' }
     },
     income: {
       annualIncome: { value: '96000', source: 'Income certificate' }
     },
-
     incomeCertificate: {
-      file: { value: { name: 'Income certificate', meta: 'PDF · 860 KB', source: 'DigiLocker', status: 'Verified' }, source: 'DigiLocker' }
+      file: { value: { name: 'Income Certificate AY 2026-27', meta: 'PDF · 860 KB', source: 'DigiLocker', status: 'Verified' }, source: 'DigiLocker' }
     }
   }
 };
 
-const nspFields = [
+const form14AFields = [
   {
     id: 'fullName', label: 'What is your name?', shortLabel: 'Full name', type: 'text', required: true,
     options: [], prefillSource: 'digilocker.identity.fullName', chatPrompt: 'I found your name on your Aadhaar card. Is “Ananya Sharma” correct?',
-    backendField: 'applicant_name', placeholder: 'e.g. Ananya Sharma', help: 'Use the name exactly as it appears on your Aadhaar or marksheet.'
+    backendField: 'applicant_name', placeholder: 'e.g. Ananya Sharma', help: 'Use the name exactly as it appears on your PAN or Aadhaar card.'
   },
   {
     id: 'phone', label: 'Which mobile number should receive updates?', shortLabel: 'Mobile number', type: 'text', format: 'phone', inputMode: 'numeric', required: true,
-    options: [], prefillSource: null, defaultValue: '9876543210', chatPrompt: 'Which 10-digit mobile number should receive application updates?',
-    backendField: 'mobile_number', placeholder: '10-digit mobile number', help: 'Choose a number you can access. We will use it only for application updates.'
+    options: [], prefillSource: null, defaultValue: '9876543210', chatPrompt: 'Which 10-digit mobile number should receive filing updates?',
+    backendField: 'mobile_number', placeholder: '10-digit mobile number', help: 'We will send acknowledgment and e-filing status updates here.'
   },
   {
     id: 'dob', label: 'What is your date of birth?', shortLabel: 'Date of birth', type: 'date', required: true,
     options: [], prefillSource: 'digilocker.identity.dob', chatPrompt: 'Your Aadhaar card shows 05/09/2002 as your date of birth. Is that right?',
-    backendField: 'date_of_birth', placeholder: 'DD / MM / YYYY', help: 'This should match your identity document or school record.'
+    backendField: 'date_of_birth', placeholder: 'DD / MM / YYYY', help: 'This should match your official identity documents.'
   },
   {
-    id: 'category', label: 'Which category do you belong to?', shortLabel: 'Category', type: 'category', required: true,
-    options: ['General', 'OBC-NCL', 'SC', 'ST', 'EWS'], prefillSource: 'digilocker.caste.category', chatPrompt: 'Your caste certificate shows OBC-NCL. Should I keep that category?',
-    backendField: 'social_category', placeholder: 'Choose a category', help: 'Choose the category printed on your valid community certificate.'
+    id: 'pan', label: 'What is your Permanent Account Number (PAN)?', shortLabel: 'PAN number', type: 'text', required: true,
+    options: [], prefillSource: 'digilocker.identity.pan', chatPrompt: 'I retrieved PAN ABCDE1234F from Income Tax records. Is this correct?',
+    backendField: 'pan_number', placeholder: 'e.g. ABCDE1234F', help: 'Verified 10-digit PAN linked with Aadhaar.'
   },
   {
-    id: 'state', label: 'Which state do you currently live in?', shortLabel: 'State', type: 'category', required: true,
-    options: ['Maharashtra', 'Karnataka', 'Delhi', 'Rajasthan', 'Uttar Pradesh'], prefillSource: 'digilocker.identity.state', chatPrompt: 'Your Aadhaar card lists Maharashtra as your state. Is that your current residential state?',
-    backendField: 'residential_state', placeholder: 'Choose your state', help: 'Choose your current residential state, not necessarily your college state.'
+    id: 'category', label: 'What is your taxpayer filing category?', shortLabel: 'Filing status', type: 'category', required: true,
+    options: ['Individual (Resident)', 'HUF', 'Non-Resident Indian (NRI)', 'Partnership Firm'], prefillSource: 'digilocker.tax.category', chatPrompt: 'Your filing category is set to Individual (Resident). Keep that?',
+    backendField: 'taxpayer_category', placeholder: 'Choose filing category', help: 'Select your taxpayer assessment category.'
   },
   {
-    id: 'annualIncome', label: 'What is your family income for one year?', shortLabel: 'Annual family income', type: 'number', required: true,
-    options: [], prefillSource: 'digilocker.income.annualIncome', chatPrompt: 'I found ₹96,000 on your income certificate. Is that your annual family income?',
-    backendField: 'annual_family_income', placeholder: 'e.g. 96000', suffix: 'per year', help: 'Enter the amount from your latest income certificate, without commas or ₹.'
+    id: 'state', label: 'Which state do you currently live in?', shortLabel: 'State of residence', type: 'category', required: true,
+    options: ['Maharashtra', 'Delhi', 'Karnataka', 'Gujarat', 'Tamil Nadu', 'Uttar Pradesh', 'Rajasthan'], prefillSource: 'digilocker.identity.state', chatPrompt: 'Your Aadhaar lists Maharashtra as your state. Is that your residential state?',
+    backendField: 'residential_state', placeholder: 'Choose your state', help: 'Select your current residential state.'
   },
   {
-    id: 'bankAccount', label: 'What is your bank account number?', shortLabel: 'Bank account', type: 'text', required: true,
-    options: [], prefillSource: null, defaultValue: '201145009811', chatPrompt: 'Please enter an active bank account in your name. Double-check every digit before continuing.',
-    backendField: 'bank_account_number', placeholder: 'Enter account number', help: 'Use an active account in your name and double-check every digit.'
+    id: 'annualIncome', label: 'What is your gross annual income for this year?', shortLabel: 'Gross annual income', type: 'number', required: true,
+    options: [], prefillSource: 'digilocker.income.annualIncome', chatPrompt: 'I found ₹96,000 on your income statement. Is that your gross annual income?',
+    backendField: 'gross_annual_income', placeholder: 'e.g. 96000', suffix: 'per year', help: 'Enter your total gross income for the financial year.'
   },
   {
-    id: 'marksheet', label: 'Upload your latest marksheet', shortLabel: 'Latest marksheet', type: 'file', required: true,
-    options: [], prefillSource: null, chatPrompt: 'Please upload your latest marksheet.',
-    backendField: 'class_12_marksheet', help: 'Check that the document is readable and all its corners are visible.'
+    id: 'bankAccount', label: 'What is your bank account number for refund?', shortLabel: 'Bank account for refund', type: 'text', required: true,
+    options: [], prefillSource: null, defaultValue: '201145009811', chatPrompt: 'Please enter your bank account number for any direct refund credit.',
+    backendField: 'bank_account_number', placeholder: 'Enter account number', help: 'Use a pre-validated bank account in your name.'
   },
   {
-    id: 'incomeCertificate', label: 'Confirm your income certificate', shortLabel: 'Income certificate', type: 'file', required: true,
+    id: 'form16', label: 'Upload your Form 16 / Proof of income', shortLabel: 'Form 16 / Salary proof', type: 'file', required: true,
+    options: [], prefillSource: null, chatPrompt: 'Please upload your Form 16 or salary certificate.',
+    backendField: 'form16_document', help: 'Upload salary certificate, Form 16, or income proof (PDF or Image up to 5MB).'
+  },
+  {
+    id: 'incomeCertificate', label: 'Confirm your verified income declaration', shortLabel: 'Income certificate', type: 'file', required: true,
     options: [], prefillSource: 'digilocker.incomeCertificate.file', chatPrompt: 'I found your income certificate in DigiLocker. Please confirm it is from the latest financial year.',
-    backendField: 'income_certificate', help: 'Use a certificate from the latest financial year.'
+    backendField: 'income_declaration_doc', help: 'Verified income certificate linked from DigiLocker.'
   },
   {
-    id: 'otherScholarship', label: 'Are you receiving another scholarship?', shortLabel: 'Another scholarship', type: 'yesno', required: true,
-    options: ['Yes', 'No'], prefillSource: null, defaultValue: 'No', chatPrompt: 'Are you receiving another scholarship for the same academic year?',
-    backendField: 'receiving_other_scholarship', help: 'Tell us about any scholarship received for the same academic year.'
+    id: 'rebateClaim', label: 'Are you claiming tax rebate under Section 87A?', shortLabel: 'Rebate under Sec 87A', type: 'yesno', required: true,
+    options: ['Yes', 'No'], prefillSource: null, defaultValue: 'No', chatPrompt: 'Are you eligible and claiming rebate under Section 87A?',
+    backendField: 'rebate_claimed_87a', help: 'Available for resident individuals with taxable income up to eligible threshold.'
   }
 ];
 
@@ -93,9 +96,13 @@ const incomeFields = [
 ];
 
 export const FORM_SCHEMAS = {
+  form14a: {
+    formId: 'form14a', id: 'form14a', title: 'Form 14A', service: 'Income Tax Department', department: 'Income Tax Dept, GoI',
+    description: 'Assessment & Tax Clearance Declaration · AY 2026–27', accent: 'navy', fields: form14AFields
+  },
   nsp: {
-    formId: 'nsp', id: 'nsp', title: 'Scholarship application', service: 'National Scholarship Portal', department: 'Department of Higher Education',
-    description: 'Post-matric scholarship · 2026–27', accent: 'mint', fields: nspFields
+    formId: 'form14a', id: 'form14a', title: 'Form 14A', service: 'Income Tax Department', department: 'Income Tax Dept, GoI',
+    description: 'Assessment & Tax Clearance Declaration · AY 2026–27', accent: 'navy', fields: form14AFields
   },
   income: {
     formId: 'income', id: 'income', title: 'Income certificate request', service: 'Citizen services', department: 'Revenue Department',

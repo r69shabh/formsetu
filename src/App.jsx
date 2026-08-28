@@ -59,7 +59,7 @@ function App() {
 
   useEffect(() => {
     const requestedForm = new URLSearchParams(window.location.search).get('form');
-    chooseForm(requestedForm === 'income' ? 'income' : 'nsp');
+    chooseForm(requestedForm === 'income' ? 'income' : 'form14a');
   }, []);
   
   useEffect(() => { 
@@ -71,7 +71,7 @@ function App() {
   async function chooseForm(formId) {
     setBusy(true);
     try {
-      let nextSchema = FORM_SCHEMAS[formId] || FORM_SCHEMAS.nsp;
+      let nextSchema = FORM_SCHEMAS[formId] || FORM_SCHEMAS.form14a || FORM_SCHEMAS.nsp;
       setSchema(nextSchema); 
       setCurrent(0); 
       setIssues({}); 
@@ -83,7 +83,7 @@ function App() {
       hydrate(payload, nextSchema);
       setPhase('language');
     } catch (error) {
-      const fallback = FORM_SCHEMAS[formId] || FORM_SCHEMAS.nsp;
+      const fallback = FORM_SCHEMAS[formId] || FORM_SCHEMAS.form14a || FORM_SCHEMAS.nsp;
       setSchema(fallback);
       hydrate(getInitialState(fallback), fallback);
       setPhase('language');
@@ -1013,7 +1013,7 @@ function Success({ schema, submission, onTrack, onRestart, lang }) {
       <div className="outcome-mark success"><Check size={31} /></div>
       
       <h1>
-        {schema.id === 'nsp' ? <>Your scholarship application<br /><em>is on its way.</em></> : <>Your request<br /><em>is on its way.</em></>}
+        <>Your {schema?.title || 'Form 14A'}<br /><em>is on its way.</em></>
       </h1>
       
       <div className="reference">

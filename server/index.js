@@ -97,7 +97,7 @@ app.post('/api/submit', async (request, response) => {
       issues: { incomeCertificate: 'The applicant name does not match the income certificate.' }, payload
     });
   }
-  const reference = `${schema.id === 'nsp' ? 'NSP' : 'INC'}-${new Date().getFullYear()}-${Math.random().toString(36).slice(2, 7).toUpperCase()}`;
+  const reference = `${schema.id === 'income' ? 'INC' : 'ITD'}-${new Date().getFullYear()}-${Math.random().toString(36).slice(2, 7).toUpperCase()}`;
   submissions.set(reference, { reference, formId: schema.id, stage: 'Document check', createdAt: new Date().toISOString() });
   return response.json({ status: 'success', reference, referenceNumber: reference, stage: 'Document check', submittedPayload: payload, payload, message: 'Your prototype submission was accepted.' });
 });
