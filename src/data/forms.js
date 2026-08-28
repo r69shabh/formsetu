@@ -4,11 +4,11 @@ export const MOCK_DIGILOCKER = {
     identity: {
       fullName: { value: 'Ananya Sharma', source: 'Aadhaar card' },
       dob: { value: '2002-09-05', source: 'Aadhaar card' },
-      pan: { value: 'ABCDE1234F', source: 'Income Tax Dept' },
+      pan: { value: 'ABCDE1234F', source: 'Revenue Authority' },
       state: { value: 'Maharashtra', source: 'Aadhaar card' }
     },
     tax: {
-      category: { value: 'Individual (Resident)', source: 'Income Tax Dept' }
+      category: { value: 'Individual (Resident)', source: 'Revenue Authority' }
     },
     income: {
       annualIncome: { value: '96000', source: 'Income certificate' }
@@ -37,7 +37,7 @@ const form14AFields = [
   },
   {
     id: 'pan', label: 'What is your Permanent Account Number (PAN)?', shortLabel: 'PAN number', type: 'text', required: true,
-    options: [], prefillSource: 'digilocker.identity.pan', chatPrompt: 'I retrieved PAN ABCDE1234F from Income Tax records. Is this correct?',
+    options: [], prefillSource: 'digilocker.identity.pan', chatPrompt: 'I retrieved PAN ABCDE1234F from verified tax records. Is this correct?',
     backendField: 'pan_number', placeholder: 'e.g. ABCDE1234F', help: 'Verified 10-digit PAN linked with Aadhaar.'
   },
   {
@@ -97,11 +97,11 @@ const incomeFields = [
 
 export const FORM_SCHEMAS = {
   form14a: {
-    formId: 'form14a', id: 'form14a', title: 'Form 14A', service: 'Income Tax Department', department: 'Income Tax Dept, GoI',
+    formId: 'form14a', id: 'form14a', title: 'Form 14A', service: 'Revenue & Taxation Services', department: 'Dept of Public Revenue',
     description: 'Assessment & Tax Clearance Declaration · AY 2026–27', accent: 'navy', fields: form14AFields
   },
   nsp: {
-    formId: 'form14a', id: 'form14a', title: 'Form 14A', service: 'Income Tax Department', department: 'Income Tax Dept, GoI',
+    formId: 'form14a', id: 'form14a', title: 'Form 14A', service: 'Revenue & Taxation Services', department: 'Dept of Public Revenue',
     description: 'Assessment & Tax Clearance Declaration · AY 2026–27', accent: 'navy', fields: form14AFields
   },
   income: {

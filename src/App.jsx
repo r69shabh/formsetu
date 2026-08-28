@@ -357,7 +357,7 @@ function App() {
 }
 
 function Shell({ schema, children, mode, setMode, showTabs = false, lang = 'en', setLang, onOpenLanguage }) {
-  const department = schema?.department || (schema?.id === 'nsp' ? 'Department of Higher Education' : 'Citizen Services Dept, GoI');
+  const department = schema?.department || (schema?.id === 'nsp' ? 'Department of Higher Education' : 'Dept of Public Revenue');
   const formTitle = schema?.title || 'Form 14A';
   const currentLangObj = INDIAN_LANGUAGES.find(l => l.code === lang) || INDIAN_LANGUAGES[0];
 

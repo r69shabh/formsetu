@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Income Tax Department | Government of India | e-Filing Portal</title>
+  <title>Revenue & Citizen Services Portal | e-Filing</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;600;700&display=swap" rel="stylesheet">
@@ -64,14 +64,6 @@
       gap: 16px;
       align-items: center;
       font-weight: 500;
-    }
-
-    .gov-identity span.flag {
-      display: inline-block;
-      width: 16px;
-      height: 10px;
-      background: linear-gradient(to bottom, #ff9933 33%, #ffffff 33%, #ffffff 66%, #138808 66%);
-      border-radius: 1px;
     }
 
     .accessibility-tools {
@@ -233,11 +225,11 @@
       background: var(--gov-primary-dark);
     }
 
-    /* Tricolor ribbon */
-    .tricolor-stripe {
+    /* Stripe */
+    .portal-stripe {
       height: 4px;
       width: 100%;
-      background: linear-gradient(90deg, #ff9933 0%, #ff9933 33.33%, #ffffff 33.33%, #ffffff 66.66%, #138808 66.66%, #138808 100%);
+      background: linear-gradient(90deg, #1e5f8a 0%, #0a3d62 50%, #f39c12 100%);
     }
 
     /* Navigation Bar */
@@ -719,7 +711,7 @@
       line-height: 1.5;
     }
 
-    /* Official Footer */
+    /* Footer */
     .gov-footer {
       background: #0b1f30;
       color: #94a3b8;
@@ -771,12 +763,6 @@
       font-size: 12px;
     }
 
-    .nic-badge {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
     @media (max-width: 900px) {
       .hero-grid {
         grid-template-columns: 1fr;
@@ -811,10 +797,9 @@
   <div class="top-utility-bar">
     <div class="container utility-flex">
       <div class="gov-identity">
-        <span class="flag"></span>
-        <span>भारत सरकार | Government of India</span>
+        <span>नागरिक सेवा पोर्टल | Citizen Services Portal</span>
         <span>·</span>
-        <span>वित्त मंत्रालय | Ministry of Finance</span>
+        <span>सार्वजनिक प्रशासन | Public Services</span>
       </div>
       <div class="accessibility-tools">
         <a href="#forms" style="color: #cbd5e1; text-decoration: none; font-size: 11px;">Skip to Main Content</a>
@@ -835,7 +820,7 @@
   <header class="main-header">
     <div class="container header-flex">
       <a href="#" class="emblem-brand">
-        <!-- National Emblem / Government Dome Seal -->
+        <!-- Modern Public Services Dome Seal -->
         <svg class="emblem-svg" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
           <circle cx="50" cy="50" r="46" stroke="#0a3d62" stroke-width="4" fill="#f8fafc"/>
           <path d="M50 14L50 24" stroke="#0a3d62" stroke-width="4" stroke-linecap="round"/>
@@ -846,9 +831,9 @@
           <circle cx="50" cy="34" r="3" fill="#f59e0b"/>
         </svg>
         <div class="dept-names">
-          <div class="hindi-title">आयकर विभाग</div>
-          <h1>INCOME TAX DEPARTMENT</h1>
-          <div class="sub-gov">Government of India · e-Filing & Citizen Services Portal</div>
+          <div class="hindi-title">राजस्व एवं नागरिक सेवा प्रशासन</div>
+          <h1>REVENUE & CITIZEN SERVICES</h1>
+          <div class="sub-gov">Public Services Administration · e-Filing & Assessment Portal</div>
         </div>
       </a>
 
@@ -857,7 +842,7 @@
           <svg class="search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
           </svg>
-          <input type="text" id="searchInput" class="search-input" placeholder="Search Form 14A, PAN, Circulars..." onkeyup="filterForms()">
+          <input type="text" id="searchInput" class="search-input" placeholder="Search Form 14A, Records, Circulars..." onkeyup="filterForms()">
         </div>
         <a href="https://formsetu-omega.vercel.app" class="portal-btn btn-login">Login</a>
         <a href="https://formsetu-omega.vercel.app" class="portal-btn btn-register">Register</a>
@@ -865,17 +850,17 @@
     </div>
   </header>
 
-  <!-- Tricolor Stripe -->
-  <div class="tricolor-stripe"></div>
+  <!-- Stripe -->
+  <div class="portal-stripe"></div>
 
   <!-- Main Navigation Bar -->
   <nav class="gov-navbar">
     <div class="container">
       <ul class="nav-list">
         <li class="nav-item"><a href="#">Home</a></li>
-        <li class="nav-item"><a href="#">Individual / HUF</a></li>
-        <li class="nav-item"><a href="#">Company / Firm</a></li>
-        <li class="nav-item"><a href="#">Tax Services</a></li>
+        <li class="nav-item"><a href="#">Individual Taxpayer</a></li>
+        <li class="nav-item"><a href="#">Corporate / Entities</a></li>
+        <li class="nav-item"><a href="#">Revenue Services</a></li>
         <li class="nav-item active"><a href="#forms">Forms & Declarations</a></li>
         <li class="nav-item"><a href="#">e-Verification</a></li>
         <li class="nav-item"><a href="#">Downloads</a></li>
@@ -889,7 +874,7 @@
     <div class="container ticker-flex">
       <span class="ticker-badge">LIVE</span>
       <div class="ticker-text">
-        <strong>Important Notice:</strong> Instant online submission of Form 14A (Income Tax Assessment & Clearance Declaration) via FormSetu with automatic DigiLocker & voice verification is now active for AY 2026-27.
+        <strong>Notice:</strong> Instant electronic filing of Form 14A (Revenue Assessment & Clearance Declaration) via FormSetu with automated document prefill is now active for AY 2026-27.
       </div>
     </div>
   </div>
@@ -900,11 +885,11 @@
       <div class="hero-content">
         <div class="hero-badge-pill">
           <span>⚡</span>
-          <span>New Next-Gen e-Filing Interface (AY 2026–27)</span>
+          <span>Digital e-Filing Interface (AY 2026–27)</span>
         </div>
-        <h2 class="hero-title">Seamless e-Filing & Income Tax Clearance Portal</h2>
+        <h2 class="hero-title">Seamless e-Filing & Assessment Clearance Portal</h2>
         <p class="hero-desc">
-          Complete mandatory filings, declare assessments, and link identity documents in minutes. Featuring instant DigiLocker authentication and interactive multi-lingual assistance.
+          Complete mandatory filings, declare revenue assessments, and link identity records in minutes. Featuring instant digital verification and interactive multi-lingual assistance.
         </p>
         <div class="hero-actions">
           <a href="https://formsetu-omega.vercel.app" class="btn-hero-primary" target="_blank" rel="noopener">
@@ -922,7 +907,7 @@
         <div class="stat-row">
           <div class="stat-box">
             <div class="stat-number">7.4 Cr+</div>
-            <div class="stat-label">Returns Filed This AY</div>
+            <div class="stat-label">Declarations Processed</div>
           </div>
           <div class="stat-box">
             <div class="stat-number">98.4%</div>
@@ -931,7 +916,7 @@
         </div>
         <div class="hero-trust-row">
           <span class="trust-chip">SECURE</span>
-          <span>256-Bit Encrypted Government of India Gateway</span>
+          <span>256-Bit Encrypted Public Services Gateway</span>
         </div>
       </div>
     </div>
@@ -941,8 +926,8 @@
   <section class="section-wrap" id="forms">
     <div class="container">
       <div class="section-head">
-        <span class="section-kicker">Departmental Services</span>
-        <h2 class="section-title">Income Tax Forms & Declarations</h2>
+        <span class="section-kicker">Citizen Services</span>
+        <h2 class="section-title">Revenue Forms & Declarations</h2>
         <p class="section-sub">Select the appropriate form below to initiate your electronic submission and assessment.</p>
       </div>
 
@@ -960,14 +945,14 @@
               </div>
               <div class="card-title-wrap">
                 <h3>Form 14A</h3>
-                <span class="card-form-code">ITD-FORM-14A</span>
+                <span class="card-form-code">FORM-14A</span>
               </div>
             </div>
             <p class="card-desc">
-              Income Tax Assessment & Clearance Declaration for resident taxpayers, verified income proofs, and refund routing.
+              Revenue Assessment & Clearance Declaration for resident taxpayers, verified income proofs, and refund routing.
             </p>
             <ul class="card-features-list">
-              <li><span class="check-icon">✓</span> <strong>DigiLocker Pre-fill:</strong> Aadhaar, PAN & Income records</li>
+              <li><span class="check-icon">✓</span> <strong>DigiLocker Pre-fill:</strong> Verified identity & income statements</li>
               <li><span class="check-icon">✓</span> <strong>Voice Guided:</strong> 22 Indian languages + Hinglish</li>
               <li><span class="check-icon">✓</span> <strong>Direct Tracking:</strong> Instant ACK reference generated</li>
             </ul>
@@ -978,8 +963,8 @@
           </a>
         </div>
 
-        <!-- ITR-1 (Sahaj) -->
-        <div class="form-card" data-keywords="itr 1 sahaj salary return 50 lakh">
+        <!-- Statement 1 -->
+        <div class="form-card" data-keywords="statement 1 salary return 50 lakh">
           <div>
             <div class="card-icon-title">
               <div class="card-icon accent-orange">
@@ -988,24 +973,24 @@
                 </svg>
               </div>
               <div class="card-title-wrap">
-                <h3>ITR-1 (Sahaj)</h3>
+                <h3>Statement 1 (Annual)</h3>
                 <span class="card-form-code">ANNUAL RETURN</span>
               </div>
             </div>
             <p class="card-desc">
-              For resident individuals having total income up to ₹50 Lakhs from salaries, one house property, and other sources.
+              For resident individuals declaring annual revenue from salary, single property, and other sources.
             </p>
             <ul class="card-features-list">
-              <li><span class="check-icon">✓</span> Prefilled AIS & Form 26AS data</li>
-              <li><span class="check-icon">✓</span> Standard deduction calculation</li>
+              <li><span class="check-icon">✓</span> Automated revenue data matching</li>
+              <li><span class="check-icon">✓</span> Standard deductions calculation</li>
             </ul>
           </div>
           <a href="https://formsetu-omega.vercel.app" class="card-btn btn-standard" target="_blank">
-            <span>File ITR-1</span>
+            <span>File Statement 1</span>
           </a>
         </div>
 
-        <!-- Form 49A (PAN Application) -->
+        <!-- Form 49A (Tax ID Application) -->
         <div class="form-card" data-keywords="form 49a pan card application correction">
           <div>
             <div class="card-icon-title">
@@ -1015,24 +1000,24 @@
                 </svg>
               </div>
               <div class="card-title-wrap">
-                <h3>Form 49A (PAN)</h3>
-                <span class="card-form-code">PAN ALLOTMENT</span>
+                <h3>Form 49A (Tax ID)</h3>
+                <span class="card-form-code">ID ALLOTMENT</span>
               </div>
             </div>
             <p class="card-desc">
-              Application for allotment of Permanent Account Number (PAN) for Indian citizens, entities, and trusts.
+              Application for allotment of Permanent Account Identifier (PAN) for individual taxpayers, entities, and trusts.
             </p>
             <ul class="card-features-list">
-              <li><span class="check-icon">✓</span> Paperless e-KYC via Aadhaar OTP</li>
-              <li><span class="check-icon">✓</span> Instant e-PAN generation</li>
+              <li><span class="check-icon">✓</span> Paperless e-verification</li>
+              <li><span class="check-icon">✓</span> Instant electronic tax ID issuance</li>
             </ul>
           </div>
           <a href="https://formsetu-omega.vercel.app" class="card-btn btn-standard" target="_blank">
-            <span>Apply for PAN</span>
+            <span>Apply for Tax ID</span>
           </a>
         </div>
 
-        <!-- Form 26AS Tax Credit -->
+        <!-- Statement 26 -->
         <div class="form-card" data-keywords="form 26as tax credit statement tds tcs">
           <div>
             <div class="card-icon-title">
@@ -1042,20 +1027,20 @@
                 </svg>
               </div>
               <div class="card-title-wrap">
-                <h3>Form 26AS</h3>
+                <h3>Statement 26</h3>
                 <span class="card-form-code">TAX STATEMENT</span>
               </div>
             </div>
             <p class="card-desc">
-              View consolidated annual statement of tax deducted at source (TDS), tax collected (TCS), and self-assessment payments.
+              View consolidated annual statement of tax deducted at source, collections, and self-assessment credits.
             </p>
             <ul class="card-features-list">
-              <li><span class="check-icon">✓</span> Instant TRACES synchronization</li>
+              <li><span class="check-icon">✓</span> Instant ledger synchronization</li>
               <li><span class="check-icon">✓</span> View all tax deductions</li>
             </ul>
           </div>
           <a href="https://formsetu-omega.vercel.app" class="card-btn btn-standard" target="_blank">
-            <span>View 26AS</span>
+            <span>View Statement 26</span>
           </a>
         </div>
 
@@ -1070,11 +1055,11 @@
               </div>
               <div class="card-title-wrap">
                 <h3>e-Verify Return</h3>
-                <span class="card-form-code">INSTANT EVC</span>
+                <span class="card-form-code">INSTANT VERIFICATION</span>
               </div>
             </div>
             <p class="card-desc">
-              Verify your submitted Income Tax Return without sending physical ITR-V forms via Aadhaar OTP, NetBanking, or Demat.
+              Verify your submitted return without physical paperwork using mobile OTP or bank verification code.
             </p>
             <ul class="card-features-list">
               <li><span class="check-icon">✓</span> No physical signature needed</li>
@@ -1086,7 +1071,7 @@
           </a>
         </div>
 
-        <!-- Challan 280 / e-Pay Tax -->
+        <!-- Challan 280 / e-Pay -->
         <div class="form-card" data-keywords="challan 280 epay tax advance tax payment">
           <div>
             <div class="card-icon-title">
@@ -1096,20 +1081,20 @@
                 </svg>
               </div>
               <div class="card-title-wrap">
-                <h3>e-Pay Tax</h3>
+                <h3>e-Pay Dues</h3>
                 <span class="card-form-code">CHALLAN 280</span>
               </div>
             </div>
             <p class="card-desc">
-              Pay Advance Tax, Self-Assessment Tax, Demand Notice dues directly via UPI, NetBanking, Credit Card or RTGS.
+              Pay advance dues and self-assessment payments directly via UPI, NetBanking, Card or RTGS.
             </p>
             <ul class="card-features-list">
-              <li><span class="check-icon">✓</span> Instant CIN receipt generated</li>
-              <li><span class="check-icon">✓</span> Auto-credit to PAN ledger</li>
+              <li><span class="check-icon">✓</span> Instant receipt generated</li>
+              <li><span class="check-icon">✓</span> Auto-credit to taxpayer ledger</li>
             </ul>
           </div>
           <a href="https://formsetu-omega.vercel.app" class="card-btn btn-standard" target="_blank">
-            <span>Pay Tax Online</span>
+            <span>Pay Online</span>
           </a>
         </div>
 
@@ -1127,7 +1112,7 @@
         <div class="guide-item">
           <div class="guide-num">2</div>
           <div>
-            <h4>DigiLocker Authentication</h4>
+            <h4>Digital Authentication</h4>
             <p>One-tap authentication fetches verified certificates and records automatically.</p>
           </div>
         </div>
@@ -1135,7 +1120,7 @@
           <div class="guide-num">3</div>
           <div>
             <h4>Instant Acknowledgment</h4>
-            <p>Receive your official ITD reference number and track application stages live.</p>
+            <p>Receive your official reference number and track application stages live.</p>
           </div>
         </div>
       </div>
@@ -1143,18 +1128,17 @@
     </div>
   </section>
 
-  <!-- Official Footer -->
+  <!-- Footer -->
   <footer class="gov-footer">
     <div class="container">
       <div class="footer-grid">
         <div class="footer-col">
-          <h4 style="color: #ffffff;">Income Tax Department</h4>
+          <h4 style="color: #ffffff;">Dept of Public Revenue</h4>
           <p style="font-size: 12.5px; line-height: 1.6; margin-bottom: 14px;">
-            Central Board of Direct Taxes (CBDT), Department of Revenue, Ministry of Finance, Government of India.
+            Department of Public Revenue & Citizen Services Administration.
           </p>
-          <div class="nic-badge">
-            <span style="display:inline-block; width:10px; height:10px; border-radius:50%; background:#10b981;"></span>
-            <span>Portal Secured by NIC & DigiLocker Gateway</span>
+          <div style="font-size: 11.5px; color: #94a3b8;">
+            <span>Digital Public Infrastructure Prototype</span>
           </div>
         </div>
 
@@ -1162,9 +1146,9 @@
           <h4>Taxpayer Services</h4>
           <ul class="footer-links">
             <li><a href="https://formsetu-omega.vercel.app">Form 14A Declaration</a></li>
-            <li><a href="#">ITR-1 (Sahaj) Filing</a></li>
-            <li><a href="#">PAN Allotment (Form 49A)</a></li>
-            <li><a href="#">Tax Calculator AY 2026-27</a></li>
+            <li><a href="#">Statement 1 Filing</a></li>
+            <li><a href="#">Tax ID Allotment (Form 49A)</a></li>
+            <li><a href="#">Assessment Calculator AY 2026-27</a></li>
           </ul>
         </div>
 
@@ -1173,27 +1157,27 @@
           <ul class="footer-links">
             <li><a href="#">e-Filing Guidelines</a></li>
             <li><a href="#">Circulars & Notifications</a></li>
-            <li><a href="#">Annual Information Statement (AIS)</a></li>
-            <li><a href="#">CBDT Grievance Redressal</a></li>
+            <li><a href="#">Annual Statement (AIS)</a></li>
+            <li><a href="#">Grievance Redressal</a></li>
           </ul>
         </div>
 
         <div class="footer-col">
-          <h4>Helpline & Support</h4>
-          <p style="font-size: 12.5px; margin-bottom: 6px;">Toll-Free: <strong>1800 180 1961</strong></p>
+          <h4>Help & Support</h4>
+          <p style="font-size: 12.5px; margin-bottom: 6px;">Toll-Free Helpline: <strong>1800 180 1961</strong></p>
           <p style="font-size: 12.5px; margin-bottom: 12px;">Hours: 8:00 AM – 10:00 PM (Mon - Sat)</p>
-          <p style="font-size: 11.5px; color: #64748b;">Aayakar Seva Kendra (ASK)</p>
+          <p style="font-size: 11.5px; color: #64748b;">Citizen Service Desk</p>
         </div>
       </div>
 
       <div class="footer-bottom">
         <div>
-          © 2026 Income Tax Department, Ministry of Finance, Government of India. All Rights Reserved.
+          © 2026 Dept of Public Revenue. Prototype Citizen Experience.
         </div>
         <div style="display: flex; gap: 16px;">
           <a href="#" style="color: #94a3b8; text-decoration: none;">Privacy Policy</a>
           <a href="#" style="color: #94a3b8; text-decoration: none;">Terms of Use</a>
-          <a href="#" style="color: #94a3b8; text-decoration: none;">Hyperlink Policy</a>
+          <a href="#" style="color: #94a3b8; text-decoration: none;">Guidelines</a>
         </div>
       </div>
     </div>
