@@ -1,0 +1,1218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Income Tax Department | Government of India | e-Filing Portal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --gov-primary: #0a3d62;
+      --gov-primary-dark: #072a44;
+      --gov-primary-light: #1e5f8a;
+      --gov-accent: #e67e22;
+      --gov-saffron: #ff9933;
+      --gov-green: #138808;
+      --gov-gold: #f39c12;
+      --gov-bg: #f4f7f9;
+      --gov-card-bg: #ffffff;
+      --gov-border: #dbe4ea;
+      --gov-text-dark: #1e293b;
+      --gov-text-muted: #64748b;
+      --gov-font: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--gov-font);
+      background-color: var(--gov-bg);
+      color: var(--gov-text-dark);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Top Utility Bar */
+    .top-utility-bar {
+      background: #061c2d;
+      color: #e2e8f0;
+      font-size: 12px;
+      padding: 6px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .container {
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 0 20px;
+    }
+
+    .utility-flex {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .gov-identity {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+      font-weight: 500;
+    }
+
+    .gov-identity span.flag {
+      display: inline-block;
+      width: 16px;
+      height: 10px;
+      background: linear-gradient(to bottom, #ff9933 33%, #ffffff 33%, #ffffff 66%, #138808 66%);
+      border-radius: 1px;
+    }
+
+    .accessibility-tools {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .font-toggle {
+      display: flex;
+      gap: 4px;
+      background: rgba(255,255,255,0.1);
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+
+    .font-btn {
+      background: none;
+      border: none;
+      color: #cbd5e1;
+      cursor: pointer;
+      font-size: 11px;
+      padding: 0 4px;
+      font-weight: 600;
+    }
+
+    .font-btn:hover {
+      color: #fff;
+    }
+
+    .lang-switcher {
+      background: rgba(255,255,255,0.1);
+      color: #fff;
+      border: 1px solid rgba(255,255,255,0.2);
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      cursor: pointer;
+    }
+
+    /* Main Branding Header */
+    .main-header {
+      background: #ffffff;
+      padding: 16px 0;
+      border-bottom: 1px solid var(--gov-border);
+    }
+
+    .header-flex {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .emblem-brand {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .emblem-svg {
+      width: 48px;
+      height: 52px;
+      flex-shrink: 0;
+    }
+
+    .dept-names h1 {
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--gov-primary);
+      letter-spacing: -0.3px;
+      line-height: 1.15;
+    }
+
+    .dept-names .hindi-title {
+      font-size: 14px;
+      color: #475569;
+      font-family: 'Noto Sans Devanagari', sans-serif;
+      font-weight: 600;
+    }
+
+    .dept-names .sub-gov {
+      font-size: 12px;
+      color: var(--gov-text-muted);
+      font-weight: 500;
+      margin-top: 2px;
+    }
+
+    .header-right-actions {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .search-box {
+      position: relative;
+      width: 280px;
+    }
+
+    .search-input {
+      width: 100%;
+      padding: 9px 14px 9px 36px;
+      border: 1.5px solid var(--gov-border);
+      border-radius: 6px;
+      font-size: 13px;
+      outline: none;
+      transition: all 0.2s;
+      background: #f8fafc;
+    }
+
+    .search-input:focus {
+      border-color: var(--gov-primary);
+      background: #ffffff;
+      box-shadow: 0 0 0 3px rgba(10, 61, 98, 0.1);
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #94a3b8;
+      width: 15px;
+      height: 15px;
+    }
+
+    .portal-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 9px 18px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 700;
+      text-decoration: none;
+      cursor: pointer;
+      transition: all 0.15s ease-in-out;
+      border: none;
+    }
+
+    .btn-login {
+      background: #ffffff;
+      color: var(--gov-primary);
+      border: 1.5px solid var(--gov-primary);
+    }
+
+    .btn-login:hover {
+      background: #f0f7ff;
+    }
+
+    .btn-register {
+      background: var(--gov-primary);
+      color: #ffffff;
+    }
+
+    .btn-register:hover {
+      background: var(--gov-primary-dark);
+    }
+
+    /* Tricolor ribbon */
+    .tricolor-stripe {
+      height: 4px;
+      width: 100%;
+      background: linear-gradient(90deg, #ff9933 0%, #ff9933 33.33%, #ffffff 33.33%, #ffffff 66.66%, #138808 66.66%, #138808 100%);
+    }
+
+    /* Navigation Bar */
+    .gov-navbar {
+      background: var(--gov-primary);
+      border-bottom: 2px solid var(--gov-primary-dark);
+    }
+
+    .nav-list {
+      display: flex;
+      list-style: none;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+
+    .nav-list::-webkit-scrollbar {
+      display: none;
+    }
+
+    .nav-item a {
+      display: block;
+      padding: 13px 18px;
+      color: #f1f5f9;
+      font-size: 13.5px;
+      font-weight: 600;
+      text-decoration: none;
+      white-space: nowrap;
+      transition: background 0.15s;
+    }
+
+    .nav-item a:hover {
+      background: rgba(255,255,255,0.12);
+      color: #ffffff;
+    }
+
+    .nav-item.active a {
+      background: #062338;
+      border-bottom: 3px solid var(--gov-gold);
+      color: #ffffff;
+    }
+
+    /* News Ticker */
+    .ticker-bar {
+      background: #fff4e5;
+      border-bottom: 1px solid #ffd8a8;
+      padding: 8px 0;
+      font-size: 13px;
+    }
+
+    .ticker-flex {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .ticker-badge {
+      background: #d9480f;
+      color: #fff;
+      font-size: 10.5px;
+      font-weight: 800;
+      padding: 2px 7px;
+      border-radius: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      flex-shrink: 0;
+    }
+
+    .ticker-text {
+      color: #7c2d12;
+      font-weight: 500;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    /* Hero Spotlight */
+    .hero-section {
+      background: linear-gradient(135deg, #092c48 0%, #0a3d62 50%, #154c74 100%);
+      color: #ffffff;
+      padding: 44px 0 54px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-section::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 45%;
+      height: 100%;
+      background: radial-gradient(circle at 70% 30%, rgba(255,255,255,0.06) 0%, transparent 60%);
+      pointer-events: none;
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 36px;
+      align-items: center;
+    }
+
+    .hero-badge-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      background: rgba(255, 255, 255, 0.15);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      backdrop-filter: blur(8px);
+      padding: 5px 14px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #fef08a;
+      margin-bottom: 16px;
+    }
+
+    .hero-title {
+      font-size: 34px;
+      font-weight: 800;
+      line-height: 1.2;
+      letter-spacing: -0.5px;
+      margin-bottom: 14px;
+    }
+
+    .hero-desc {
+      font-size: 15px;
+      color: #cbd5e1;
+      line-height: 1.6;
+      margin-bottom: 24px;
+      max-width: 580px;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 14px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .btn-hero-primary {
+      background: #f59e0b;
+      color: #0f172a;
+      font-size: 14px;
+      font-weight: 800;
+      padding: 12px 24px;
+      border-radius: 8px;
+      text-decoration: none;
+      box-shadow: 0 4px 14px rgba(245, 158, 11, 0.35);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+    }
+
+    .btn-hero-primary:hover {
+      background: #d97706;
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(245, 158, 11, 0.45);
+    }
+
+    .btn-hero-secondary {
+      background: rgba(255,255,255,0.12);
+      color: #ffffff;
+      border: 1px solid rgba(255,255,255,0.3);
+      font-size: 14px;
+      font-weight: 600;
+      padding: 12px 20px;
+      border-radius: 8px;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: background 0.2s;
+    }
+
+    .btn-hero-secondary:hover {
+      background: rgba(255,255,255,0.22);
+    }
+
+    /* Hero Quick Banner Card */
+    .hero-stat-card {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1.5px solid rgba(255, 255, 255, 0.16);
+      backdrop-filter: blur(12px);
+      border-radius: 14px;
+      padding: 24px;
+      box-shadow: 0 12px 30px rgba(0,0,0,0.2);
+    }
+
+    .stat-header {
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #93c5fd;
+      font-weight: 700;
+      margin-bottom: 16px;
+    }
+
+    .stat-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 18px;
+    }
+
+    .stat-box {
+      background: rgba(0, 0, 0, 0.2);
+      padding: 12px 14px;
+      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+
+    .stat-number {
+      font-size: 22px;
+      font-weight: 800;
+      color: #ffffff;
+      line-height: 1.1;
+    }
+
+    .stat-label {
+      font-size: 11px;
+      color: #94a3b8;
+      margin-top: 4px;
+      font-weight: 500;
+    }
+
+    .hero-trust-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding-top: 14px;
+      border-top: 1px solid rgba(255,255,255,0.12);
+      font-size: 12px;
+      color: #cbd5e1;
+    }
+
+    .trust-chip {
+      background: #10b981;
+      color: #ffffff;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+
+    /* Main Section Content */
+    .section-wrap {
+      padding: 44px 0 60px;
+    }
+
+    .section-head {
+      margin-bottom: 28px;
+    }
+
+    .section-kicker {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--gov-primary);
+      font-weight: 800;
+    }
+
+    .section-title {
+      font-size: 24px;
+      font-weight: 800;
+      color: var(--gov-text-dark);
+      margin-top: 4px;
+    }
+
+    .section-sub {
+      font-size: 14px;
+      color: var(--gov-text-muted);
+      margin-top: 4px;
+    }
+
+    /* Services & Forms Grid */
+    .forms-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+      gap: 22px;
+    }
+
+    /* Featured Form 14A Card */
+    .form-card {
+      background: var(--gov-card-bg);
+      border: 1.5px solid var(--gov-border);
+      border-radius: 12px;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: all 0.25s ease;
+      position: relative;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+    }
+
+    .form-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 24px rgba(10, 61, 98, 0.08);
+      border-color: #93c5fd;
+    }
+
+    .form-card.featured {
+      border: 2px solid #3b82f6;
+      background: linear-gradient(180deg, #f8fbff 0%, #ffffff 100%);
+      box-shadow: 0 6px 20px rgba(59, 130, 246, 0.12);
+    }
+
+    .card-top-tag {
+      position: absolute;
+      top: -12px;
+      right: 20px;
+      background: linear-gradient(90deg, #2563eb, #1d4ed8);
+      color: #ffffff;
+      font-size: 11px;
+      font-weight: 800;
+      padding: 3px 12px;
+      border-radius: 12px;
+      letter-spacing: 0.3px;
+      box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
+    }
+
+    .card-icon-title {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      margin-bottom: 14px;
+    }
+
+    .card-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
+      background: #eff6ff;
+      color: #1d4ed8;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .card-icon.accent-orange {
+      background: #fff7ed;
+      color: #ea580c;
+    }
+
+    .card-icon.accent-green {
+      background: #f0fdf4;
+      color: #16a34a;
+    }
+
+    .card-title-wrap h3 {
+      font-size: 17px;
+      font-weight: 800;
+      color: #0f172a;
+      line-height: 1.3;
+    }
+
+    .card-title-wrap .card-form-code {
+      display: inline-block;
+      font-size: 11.5px;
+      font-weight: 700;
+      color: #2563eb;
+      background: #dbeafe;
+      padding: 1px 7px;
+      border-radius: 4px;
+      margin-top: 4px;
+    }
+
+    .card-desc {
+      font-size: 13.5px;
+      color: #475569;
+      line-height: 1.55;
+      margin-bottom: 18px;
+    }
+
+    .card-features-list {
+      list-style: none;
+      margin-bottom: 22px;
+      border-top: 1px dashed #e2e8f0;
+      padding-top: 14px;
+    }
+
+    .card-features-list li {
+      font-size: 12.5px;
+      color: #334155;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+      font-weight: 500;
+    }
+
+    .check-icon {
+      color: #10b981;
+      font-weight: 800;
+    }
+
+    .card-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      padding: 11px 18px;
+      border-radius: 8px;
+      font-size: 13.5px;
+      font-weight: 700;
+      text-decoration: none;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      border: none;
+    }
+
+    .btn-apply-featured {
+      background: #1e40af;
+      color: #ffffff;
+      box-shadow: 0 3px 10px rgba(30, 64, 175, 0.25);
+    }
+
+    .btn-apply-featured:hover {
+      background: #1e3a8a;
+      box-shadow: 0 6px 16px rgba(30, 64, 175, 0.35);
+    }
+
+    .btn-standard {
+      background: #f1f5f9;
+      color: #334155;
+      border: 1px solid #cbd5e1;
+    }
+
+    .btn-standard:hover {
+      background: #e2e8f0;
+      color: #0f172a;
+    }
+
+    /* Informational Help Box */
+    .guide-banner {
+      margin-top: 48px;
+      background: #ffffff;
+      border: 1px solid var(--gov-border);
+      border-radius: 12px;
+      padding: 28px;
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 24px;
+    }
+
+    .guide-item {
+      display: flex;
+      gap: 14px;
+    }
+
+    .guide-num {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: #e0f2fe;
+      color: #0369a1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 14px;
+      flex-shrink: 0;
+    }
+
+    .guide-item h4 {
+      font-size: 14.5px;
+      font-weight: 700;
+      color: #0f172a;
+      margin-bottom: 4px;
+    }
+
+    .guide-item p {
+      font-size: 12.5px;
+      color: #64748b;
+      line-height: 1.5;
+    }
+
+    /* Official Footer */
+    .gov-footer {
+      background: #0b1f30;
+      color: #94a3b8;
+      font-size: 13px;
+      padding: 48px 0 24px;
+      border-top: 3px solid var(--gov-gold);
+    }
+
+    .footer-grid {
+      display: grid;
+      grid-template-columns: 1.5fr 1fr 1fr 1fr;
+      gap: 32px;
+      margin-bottom: 36px;
+    }
+
+    .footer-col h4 {
+      color: #f1f5f9;
+      font-size: 14px;
+      font-weight: 700;
+      margin-bottom: 14px;
+    }
+
+    .footer-links {
+      list-style: none;
+    }
+
+    .footer-links li {
+      margin-bottom: 8px;
+    }
+
+    .footer-links a {
+      color: #94a3b8;
+      text-decoration: none;
+      transition: color 0.15s;
+      font-size: 12.5px;
+    }
+
+    .footer-links a:hover {
+      color: #ffffff;
+      text-decoration: underline;
+    }
+
+    .footer-bottom {
+      border-top: 1px solid rgba(255,255,255,0.1);
+      padding-top: 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+    }
+
+    .nic-badge {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    @media (max-width: 900px) {
+      .hero-grid {
+        grid-template-columns: 1fr;
+      }
+      .guide-banner {
+        grid-template-columns: 1fr;
+      }
+      .footer-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+      .search-box {
+        display: none;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .footer-grid {
+        grid-template-columns: 1fr;
+      }
+      .forms-grid {
+        grid-template-columns: 1fr;
+      }
+      .hero-title {
+        font-size: 26px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Utility Bar -->
+  <div class="top-utility-bar">
+    <div class="container utility-flex">
+      <div class="gov-identity">
+        <span class="flag"></span>
+        <span>भारत सरकार | Government of India</span>
+        <span>·</span>
+        <span>वित्त मंत्रालय | Ministry of Finance</span>
+      </div>
+      <div class="accessibility-tools">
+        <a href="#forms" style="color: #cbd5e1; text-decoration: none; font-size: 11px;">Skip to Main Content</a>
+        <div class="font-toggle">
+          <button class="font-btn" onclick="document.body.style.fontSize='14px'">A-</button>
+          <button class="font-btn" onclick="document.body.style.fontSize='15px'">A</button>
+          <button class="font-btn" onclick="document.body.style.fontSize='16px'">A+</button>
+        </div>
+        <select class="lang-switcher" onchange="alert('Language switch active')">
+          <option>English</option>
+          <option>हिन्दी (Hindi)</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Branding Header -->
+  <header class="main-header">
+    <div class="container header-flex">
+      <a href="#" class="emblem-brand">
+        <!-- National Emblem / Government Dome Seal -->
+        <svg class="emblem-svg" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="50" cy="50" r="46" stroke="#0a3d62" stroke-width="4" fill="#f8fafc"/>
+          <path d="M50 14L50 24" stroke="#0a3d62" stroke-width="4" stroke-linecap="round"/>
+          <path d="M30 32C30 24 70 24 70 32V42H30V32Z" fill="#0a3d62"/>
+          <rect x="25" y="44" width="50" height="6" rx="2" fill="#d97706"/>
+          <path d="M32 52V74M44 52V74M56 52V74M68 52V74" stroke="#0a3d62" stroke-width="4" stroke-linecap="round"/>
+          <rect x="22" y="76" width="56" height="8" rx="3" fill="#0a3d62"/>
+          <circle cx="50" cy="34" r="3" fill="#f59e0b"/>
+        </svg>
+        <div class="dept-names">
+          <div class="hindi-title">आयकर विभाग</div>
+          <h1>INCOME TAX DEPARTMENT</h1>
+          <div class="sub-gov">Government of India · e-Filing & Citizen Services Portal</div>
+        </div>
+      </a>
+
+      <div class="header-right-actions">
+        <div class="search-box">
+          <svg class="search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+          </svg>
+          <input type="text" id="searchInput" class="search-input" placeholder="Search Form 14A, PAN, Circulars..." onkeyup="filterForms()">
+        </div>
+        <a href="https://formsetu-omega.vercel.app" class="portal-btn btn-login">Login</a>
+        <a href="https://formsetu-omega.vercel.app" class="portal-btn btn-register">Register</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Tricolor Stripe -->
+  <div class="tricolor-stripe"></div>
+
+  <!-- Main Navigation Bar -->
+  <nav class="gov-navbar">
+    <div class="container">
+      <ul class="nav-list">
+        <li class="nav-item"><a href="#">Home</a></li>
+        <li class="nav-item"><a href="#">Individual / HUF</a></li>
+        <li class="nav-item"><a href="#">Company / Firm</a></li>
+        <li class="nav-item"><a href="#">Tax Services</a></li>
+        <li class="nav-item active"><a href="#forms">Forms & Declarations</a></li>
+        <li class="nav-item"><a href="#">e-Verification</a></li>
+        <li class="nav-item"><a href="#">Downloads</a></li>
+        <li class="nav-item"><a href="#">Help & FAQs</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- News Ticker -->
+  <div class="ticker-bar">
+    <div class="container ticker-flex">
+      <span class="ticker-badge">LIVE</span>
+      <div class="ticker-text">
+        <strong>Important Notice:</strong> Instant online submission of Form 14A (Income Tax Assessment & Clearance Declaration) via FormSetu with automatic DigiLocker & voice verification is now active for AY 2026-27.
+      </div>
+    </div>
+  </div>
+
+  <!-- Hero Spotlight -->
+  <section class="hero-section">
+    <div class="container hero-grid">
+      <div class="hero-content">
+        <div class="hero-badge-pill">
+          <span>⚡</span>
+          <span>New Next-Gen e-Filing Interface (AY 2026–27)</span>
+        </div>
+        <h2 class="hero-title">Seamless e-Filing & Income Tax Clearance Portal</h2>
+        <p class="hero-desc">
+          Complete mandatory filings, declare assessments, and link identity documents in minutes. Featuring instant DigiLocker authentication and interactive multi-lingual assistance.
+        </p>
+        <div class="hero-actions">
+          <a href="https://formsetu-omega.vercel.app" class="btn-hero-primary" target="_blank" rel="noopener">
+            <span>Fill Form 14A Online</span>
+            <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+          </a>
+          <a href="#forms" class="btn-hero-secondary">
+            <span>Explore All Forms</span>
+          </a>
+        </div>
+      </div>
+
+      <div class="hero-stat-card">
+        <div class="stat-header">e-Filing Statistics 2026</div>
+        <div class="stat-row">
+          <div class="stat-box">
+            <div class="stat-number">7.4 Cr+</div>
+            <div class="stat-label">Returns Filed This AY</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-number">98.4%</div>
+            <div class="stat-label">DigiLocker Verified</div>
+          </div>
+        </div>
+        <div class="hero-trust-row">
+          <span class="trust-chip">SECURE</span>
+          <span>256-Bit Encrypted Government of India Gateway</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Forms Section -->
+  <section class="section-wrap" id="forms">
+    <div class="container">
+      <div class="section-head">
+        <span class="section-kicker">Departmental Services</span>
+        <h2 class="section-title">Income Tax Forms & Declarations</h2>
+        <p class="section-sub">Select the appropriate form below to initiate your electronic submission and assessment.</p>
+      </div>
+
+      <div class="forms-grid" id="formsGrid">
+
+        <!-- FEATURED FORM 14A -->
+        <div class="form-card featured" data-keywords="form 14a assessment tax clearance declaration digilocker income">
+          <div class="card-top-tag">POPULAR &bull; INSTANT FILL</div>
+          <div>
+            <div class="card-icon-title">
+              <div class="card-icon">
+                <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                </svg>
+              </div>
+              <div class="card-title-wrap">
+                <h3>Form 14A</h3>
+                <span class="card-form-code">ITD-FORM-14A</span>
+              </div>
+            </div>
+            <p class="card-desc">
+              Income Tax Assessment & Clearance Declaration for resident taxpayers, verified income proofs, and refund routing.
+            </p>
+            <ul class="card-features-list">
+              <li><span class="check-icon">✓</span> <strong>DigiLocker Pre-fill:</strong> Aadhaar, PAN & Income records</li>
+              <li><span class="check-icon">✓</span> <strong>Voice Guided:</strong> 22 Indian languages + Hinglish</li>
+              <li><span class="check-icon">✓</span> <strong>Direct Tracking:</strong> Instant ACK reference generated</li>
+            </ul>
+          </div>
+          <a href="https://formsetu-omega.vercel.app" class="card-btn btn-apply-featured" target="_blank" rel="noopener">
+            <span>Fill Form 14A via FormSetu</span>
+            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+          </a>
+        </div>
+
+        <!-- ITR-1 (Sahaj) -->
+        <div class="form-card" data-keywords="itr 1 sahaj salary return 50 lakh">
+          <div>
+            <div class="card-icon-title">
+              <div class="card-icon accent-orange">
+                <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+              </div>
+              <div class="card-title-wrap">
+                <h3>ITR-1 (Sahaj)</h3>
+                <span class="card-form-code">ANNUAL RETURN</span>
+              </div>
+            </div>
+            <p class="card-desc">
+              For resident individuals having total income up to ₹50 Lakhs from salaries, one house property, and other sources.
+            </p>
+            <ul class="card-features-list">
+              <li><span class="check-icon">✓</span> Prefilled AIS & Form 26AS data</li>
+              <li><span class="check-icon">✓</span> Standard deduction calculation</li>
+            </ul>
+          </div>
+          <a href="https://formsetu-omega.vercel.app" class="card-btn btn-standard" target="_blank">
+            <span>File ITR-1</span>
+          </a>
+        </div>
+
+        <!-- Form 49A (PAN Application) -->
+        <div class="form-card" data-keywords="form 49a pan card application correction">
+          <div>
+            <div class="card-icon-title">
+              <div class="card-icon accent-green">
+                <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2"></path>
+                </svg>
+              </div>
+              <div class="card-title-wrap">
+                <h3>Form 49A (PAN)</h3>
+                <span class="card-form-code">PAN ALLOTMENT</span>
+              </div>
+            </div>
+            <p class="card-desc">
+              Application for allotment of Permanent Account Number (PAN) for Indian citizens, entities, and trusts.
+            </p>
+            <ul class="card-features-list">
+              <li><span class="check-icon">✓</span> Paperless e-KYC via Aadhaar OTP</li>
+              <li><span class="check-icon">✓</span> Instant e-PAN generation</li>
+            </ul>
+          </div>
+          <a href="https://formsetu-omega.vercel.app" class="card-btn btn-standard" target="_blank">
+            <span>Apply for PAN</span>
+          </a>
+        </div>
+
+        <!-- Form 26AS Tax Credit -->
+        <div class="form-card" data-keywords="form 26as tax credit statement tds tcs">
+          <div>
+            <div class="card-icon-title">
+              <div class="card-icon">
+                <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                </svg>
+              </div>
+              <div class="card-title-wrap">
+                <h3>Form 26AS</h3>
+                <span class="card-form-code">TAX STATEMENT</span>
+              </div>
+            </div>
+            <p class="card-desc">
+              View consolidated annual statement of tax deducted at source (TDS), tax collected (TCS), and self-assessment payments.
+            </p>
+            <ul class="card-features-list">
+              <li><span class="check-icon">✓</span> Instant TRACES synchronization</li>
+              <li><span class="check-icon">✓</span> View all tax deductions</li>
+            </ul>
+          </div>
+          <a href="https://formsetu-omega.vercel.app" class="card-btn btn-standard" target="_blank">
+            <span>View 26AS</span>
+          </a>
+        </div>
+
+        <!-- e-Verify Return -->
+        <div class="form-card" data-keywords="everify return otp netbanking evc">
+          <div>
+            <div class="card-icon-title">
+              <div class="card-icon accent-green">
+                <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+                </svg>
+              </div>
+              <div class="card-title-wrap">
+                <h3>e-Verify Return</h3>
+                <span class="card-form-code">INSTANT EVC</span>
+              </div>
+            </div>
+            <p class="card-desc">
+              Verify your submitted Income Tax Return without sending physical ITR-V forms via Aadhaar OTP, NetBanking, or Demat.
+            </p>
+            <ul class="card-features-list">
+              <li><span class="check-icon">✓</span> No physical signature needed</li>
+              <li><span class="check-icon">✓</span> Immediate acknowledgement</li>
+            </ul>
+          </div>
+          <a href="https://formsetu-omega.vercel.app" class="card-btn btn-standard" target="_blank">
+            <span>e-Verify Now</span>
+          </a>
+        </div>
+
+        <!-- Challan 280 / e-Pay Tax -->
+        <div class="form-card" data-keywords="challan 280 epay tax advance tax payment">
+          <div>
+            <div class="card-icon-title">
+              <div class="card-icon accent-orange">
+                <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
+                </svg>
+              </div>
+              <div class="card-title-wrap">
+                <h3>e-Pay Tax</h3>
+                <span class="card-form-code">CHALLAN 280</span>
+              </div>
+            </div>
+            <p class="card-desc">
+              Pay Advance Tax, Self-Assessment Tax, Demand Notice dues directly via UPI, NetBanking, Credit Card or RTGS.
+            </p>
+            <ul class="card-features-list">
+              <li><span class="check-icon">✓</span> Instant CIN receipt generated</li>
+              <li><span class="check-icon">✓</span> Auto-credit to PAN ledger</li>
+            </ul>
+          </div>
+          <a href="https://formsetu-omega.vercel.app" class="card-btn btn-standard" target="_blank">
+            <span>Pay Tax Online</span>
+          </a>
+        </div>
+
+      </div>
+
+      <!-- Quick 3-Step Guide -->
+      <div class="guide-banner">
+        <div class="guide-item">
+          <div class="guide-num">1</div>
+          <div>
+            <h4>Select Form 14A</h4>
+            <p>Initiate the paperless clearance declaration directly from this portal.</p>
+          </div>
+        </div>
+        <div class="guide-item">
+          <div class="guide-num">2</div>
+          <div>
+            <h4>DigiLocker Authentication</h4>
+            <p>One-tap authentication fetches verified certificates and records automatically.</p>
+          </div>
+        </div>
+        <div class="guide-item">
+          <div class="guide-num">3</div>
+          <div>
+            <h4>Instant Acknowledgment</h4>
+            <p>Receive your official ITD reference number and track application stages live.</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Official Footer -->
+  <footer class="gov-footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-col">
+          <h4 style="color: #ffffff;">Income Tax Department</h4>
+          <p style="font-size: 12.5px; line-height: 1.6; margin-bottom: 14px;">
+            Central Board of Direct Taxes (CBDT), Department of Revenue, Ministry of Finance, Government of India.
+          </p>
+          <div class="nic-badge">
+            <span style="display:inline-block; width:10px; height:10px; border-radius:50%; background:#10b981;"></span>
+            <span>Portal Secured by NIC & DigiLocker Gateway</span>
+          </div>
+        </div>
+
+        <div class="footer-col">
+          <h4>Taxpayer Services</h4>
+          <ul class="footer-links">
+            <li><a href="https://formsetu-omega.vercel.app">Form 14A Declaration</a></li>
+            <li><a href="#">ITR-1 (Sahaj) Filing</a></li>
+            <li><a href="#">PAN Allotment (Form 49A)</a></li>
+            <li><a href="#">Tax Calculator AY 2026-27</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h4>Quick Links</h4>
+          <ul class="footer-links">
+            <li><a href="#">e-Filing Guidelines</a></li>
+            <li><a href="#">Circulars & Notifications</a></li>
+            <li><a href="#">Annual Information Statement (AIS)</a></li>
+            <li><a href="#">CBDT Grievance Redressal</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h4>Helpline & Support</h4>
+          <p style="font-size: 12.5px; margin-bottom: 6px;">Toll-Free: <strong>1800 180 1961</strong></p>
+          <p style="font-size: 12.5px; margin-bottom: 12px;">Hours: 8:00 AM – 10:00 PM (Mon - Sat)</p>
+          <p style="font-size: 11.5px; color: #64748b;">Aayakar Seva Kendra (ASK)</p>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <div>
+          © 2026 Income Tax Department, Ministry of Finance, Government of India. All Rights Reserved.
+        </div>
+        <div style="display: flex; gap: 16px;">
+          <a href="#" style="color: #94a3b8; text-decoration: none;">Privacy Policy</a>
+          <a href="#" style="color: #94a3b8; text-decoration: none;">Terms of Use</a>
+          <a href="#" style="color: #94a3b8; text-decoration: none;">Hyperlink Policy</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    function filterForms() {
+      const input = document.getElementById('searchInput').value.toLowerCase();
+      const cards = document.querySelectorAll('.form-card');
+      cards.forEach(card => {
+        const keywords = card.getAttribute('data-keywords') || '';
+        const text = card.innerText.toLowerCase();
+        if (text.includes(input) || keywords.includes(input)) {
+          card.style.display = 'flex';
+        } else {
+          card.style.display = 'none';
+        }
+      });
+    }
+  </script>
+</body>
+</html>
