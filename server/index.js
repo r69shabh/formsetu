@@ -113,4 +113,9 @@ app.get('/api/status/:reference', (request, response) => {
   ] });
 });
 
-app.listen(port, '127.0.0.1', () => console.log(`FormSetu API listening on http://127.0.0.1:${port}`));
+if (!process.env.VERCEL && process.env.NODE_ENV !== 'test') {
+  app.listen(port, '127.0.0.1', () => console.log(`FormSetu API listening on http://127.0.0.1:${port}`));
+}
+
+export default app;
+
