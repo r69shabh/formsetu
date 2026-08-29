@@ -100,11 +100,11 @@ The backend is powered by **Express 5** and **Zod** (`server/index.js`).
 
 Returns the full schema definition including field types, validation rules, DigiLocker mapping paths, and localized prompts.
 
-**Example Response (`/api/forms/form14a`):**
+**Example Response (`/api/forms/form25d`):**
 ```json
 {
   "id": "nsp",
-  "title": "Form 14A",
+  "title": "Form 25D",
   "service": "Income Tax Dept, GoI",
   "fields": [
     {

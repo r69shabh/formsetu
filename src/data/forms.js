@@ -19,7 +19,7 @@ export const MOCK_DIGILOCKER = {
   }
 };
 
-const form14AFields = [
+const form25DFields = [
   {
     id: 'fullName', label: 'What is your name?', shortLabel: 'Full name', type: 'text', required: true,
     options: [], prefillSource: 'digilocker.identity.fullName', chatPrompt: 'I found your name on your Aadhaar card. Is “Ananya Sharma” correct?',
@@ -97,12 +97,12 @@ const incomeFields = [
 
 export const FORM_SCHEMAS = {
   form14a: {
-    formId: 'form14a', id: 'form14a', title: 'Form 14A', service: 'Revenue & Taxation Services', department: 'Dept of Public Revenue',
-    description: 'Assessment & Tax Clearance Declaration · AY 2026–27', accent: 'navy', fields: form14AFields
+    formId: 'form25d', id: 'form25d', title: 'Form 25D', service: 'Revenue & Taxation Services', department: 'Dept of Public Revenue',
+    description: 'Assessment & Tax Clearance Declaration · AY 2026–27', accent: 'navy', fields: form25DFields
   },
   nsp: {
-    formId: 'form14a', id: 'form14a', title: 'Form 14A', service: 'Revenue & Taxation Services', department: 'Dept of Public Revenue',
-    description: 'Assessment & Tax Clearance Declaration · AY 2026–27', accent: 'navy', fields: form14AFields
+    formId: 'form25d', id: 'form25d', title: 'Form 25D', service: 'Revenue & Taxation Services', department: 'Dept of Public Revenue',
+    description: 'Assessment & Tax Clearance Declaration · AY 2026–27', accent: 'navy', fields: form25DFields
   },
   income: {
     formId: 'income', id: 'income', title: 'Income certificate request', service: 'Citizen services', department: 'Revenue Department',
