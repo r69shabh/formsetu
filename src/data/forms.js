@@ -1,6 +1,6 @@
 // Schema-driven form configurations for FormSetu
-export const MOCK_DIGILOCKER = {
-  digilocker: {
+export const MOCK_DIGITALDOC = {
+  digitaldoc: {
     identity: {
       fullName: { value: 'Ananya Sharma', source: 'Aadhaar card' },
       dob: { value: '2002-09-05', source: 'Aadhaar card' },
@@ -14,7 +14,7 @@ export const MOCK_DIGILOCKER = {
       annualIncome: { value: '96000', source: 'Income certificate' }
     },
     incomeCertificate: {
-      file: { value: { name: 'Income Certificate AY 2026-27', meta: 'PDF · 860 KB', source: 'DigiLocker', status: 'Verified' }, source: 'DigiLocker' }
+      file: { value: { name: 'Income Certificate AY 2026-27', meta: 'PDF · 860 KB', source: 'DigitalDoc', status: 'Verified' }, source: 'DigitalDoc' }
     }
   }
 };
@@ -22,7 +22,7 @@ export const MOCK_DIGILOCKER = {
 const form25DFields = [
   {
     id: 'fullName', label: 'What is your name?', shortLabel: 'Full name', type: 'text', required: true,
-    options: [], prefillSource: 'digilocker.identity.fullName', chatPrompt: 'I found your name on your Aadhaar card. Is “Ananya Sharma” correct?',
+    options: [], prefillSource: 'digitaldoc.identity.fullName', chatPrompt: 'I found your name on your Aadhaar card. Is “Ananya Sharma” correct?',
     backendField: 'applicant_name', placeholder: 'e.g. Ananya Sharma', help: 'Use the name exactly as it appears on your PAN or Aadhaar card.'
   },
   {
@@ -32,27 +32,27 @@ const form25DFields = [
   },
   {
     id: 'dob', label: 'What is your date of birth?', shortLabel: 'Date of birth', type: 'date', required: true,
-    options: [], prefillSource: 'digilocker.identity.dob', chatPrompt: 'Your Aadhaar card shows 05/09/2002 as your date of birth. Is that right?',
+    options: [], prefillSource: 'digitaldoc.identity.dob', chatPrompt: 'Your Aadhaar card shows 05/09/2002 as your date of birth. Is that right?',
     backendField: 'date_of_birth', placeholder: 'DD / MM / YYYY', help: 'This should match your official identity documents.'
   },
   {
     id: 'pan', label: 'What is your Permanent Account Number (PAN)?', shortLabel: 'PAN number', type: 'text', required: true,
-    options: [], prefillSource: 'digilocker.identity.pan', chatPrompt: 'I retrieved PAN ABCDE1234F from verified tax records. Is this correct?',
+    options: [], prefillSource: 'digitaldoc.identity.pan', chatPrompt: 'I retrieved PAN ABCDE1234F from verified tax records. Is this correct?',
     backendField: 'pan_number', placeholder: 'e.g. ABCDE1234F', help: 'Verified 10-digit PAN linked with Aadhaar.'
   },
   {
     id: 'category', label: 'What is your taxpayer filing category?', shortLabel: 'Filing status', type: 'category', required: true,
-    options: ['Individual (Resident)', 'HUF', 'Non-Resident Indian (NRI)', 'Partnership Firm'], prefillSource: 'digilocker.tax.category', chatPrompt: 'Your filing category is set to Individual (Resident). Keep that?',
+    options: ['Individual (Resident)', 'HUF', 'Non-Resident Indian (NRI)', 'Partnership Firm'], prefillSource: 'digitaldoc.tax.category', chatPrompt: 'Your filing category is set to Individual (Resident). Keep that?',
     backendField: 'taxpayer_category', placeholder: 'Choose filing category', help: 'Select your taxpayer assessment category.'
   },
   {
     id: 'state', label: 'Which state do you currently live in?', shortLabel: 'State of residence', type: 'category', required: true,
-    options: ['Maharashtra', 'Delhi', 'Karnataka', 'Gujarat', 'Tamil Nadu', 'Uttar Pradesh', 'Rajasthan'], prefillSource: 'digilocker.identity.state', chatPrompt: 'Your Aadhaar lists Maharashtra as your state. Is that your residential state?',
+    options: ['Maharashtra', 'Delhi', 'Karnataka', 'Gujarat', 'Tamil Nadu', 'Uttar Pradesh', 'Rajasthan'], prefillSource: 'digitaldoc.identity.state', chatPrompt: 'Your Aadhaar lists Maharashtra as your state. Is that your residential state?',
     backendField: 'residential_state', placeholder: 'Choose your state', help: 'Select your current residential state.'
   },
   {
     id: 'annualIncome', label: 'What is your gross annual income for this year?', shortLabel: 'Gross annual income', type: 'number', required: true,
-    options: [], prefillSource: 'digilocker.income.annualIncome', chatPrompt: 'I found ₹96,000 on your income statement. Is that your gross annual income?',
+    options: [], prefillSource: 'digitaldoc.income.annualIncome', chatPrompt: 'I found ₹96,000 on your income statement. Is that your gross annual income?',
     backendField: 'gross_annual_income', placeholder: 'e.g. 96000', suffix: 'per year', help: 'Enter your total gross income for the financial year.'
   },
   {
@@ -67,8 +67,8 @@ const form25DFields = [
   },
   {
     id: 'incomeCertificate', label: 'Confirm your verified income declaration', shortLabel: 'Income certificate', type: 'file', required: true,
-    options: [], prefillSource: 'digilocker.incomeCertificate.file', chatPrompt: 'I found your income certificate in DigiLocker. Please confirm it is from the latest financial year.',
-    backendField: 'income_declaration_doc', help: 'Verified income certificate linked from DigiLocker.'
+    options: [], prefillSource: 'digitaldoc.incomeCertificate.file', chatPrompt: 'I found your income certificate in DigitalDoc. Please confirm it is from the latest financial year.',
+    backendField: 'income_declaration_doc', help: 'Verified income certificate linked from DigitalDoc.'
   },
   {
     id: 'rebateClaim', label: 'Are you claiming tax rebate under Section 87A?', shortLabel: 'Rebate under Sec 87A', type: 'yesno', required: true,
@@ -80,7 +80,7 @@ const form25DFields = [
 const incomeFields = [
   {
     id: 'applicantName', label: 'What is your full name?', shortLabel: 'Full name', type: 'text', required: true,
-    options: [], prefillSource: 'digilocker.identity.fullName', chatPrompt: 'I found your name on your Aadhaar card. Is “Ananya Sharma” correct?',
+    options: [], prefillSource: 'digitaldoc.identity.fullName', chatPrompt: 'I found your name on your Aadhaar card. Is “Ananya Sharma” correct?',
     backendField: 'applicant_name', placeholder: 'e.g. Ananya Sharma', help: 'Use the name shown on your identity document.'
   },
   {
@@ -90,7 +90,7 @@ const incomeFields = [
   },
   {
     id: 'income', label: 'What is your family income for one year?', shortLabel: 'Annual income', type: 'number', required: true,
-    options: [], prefillSource: 'digilocker.income.annualIncome', chatPrompt: 'I found ₹96,000 on your income certificate. Is that your annual family income?',
+    options: [], prefillSource: 'digitaldoc.income.annualIncome', chatPrompt: 'I found ₹96,000 on your income certificate. Is that your annual family income?',
     backendField: 'annual_income', placeholder: 'e.g. 96000', suffix: 'per year', help: 'Enter your household income without commas or ₹.'
   }
 ];
@@ -115,7 +115,7 @@ export function getByPath(object, path) {
   return path.split('.').reduce((current, key) => current?.[key], object);
 }
 
-export function getInitialState(schema, response = MOCK_DIGILOCKER) {
+export function getInitialState(schema, response = MOCK_DIGITALDOC) {
   return schema.fields.reduce((state, field) => {
     const matched = field.prefillSource ? getByPath(response, field.prefillSource) : undefined;
     const value = matched && typeof matched === 'object' && 'value' in matched ? matched.value : matched;
@@ -138,3 +138,5 @@ export function buildSubmissionPayload(schema, values = {}, documents = {}) {
     field.type === 'file' ? (documents[field.id]?.id || documents[field.id]?.name || 'uploaded_document') : values[field.id] ?? null
   ]));
 }
+
+export const MOCK_DIGILOCKER = MOCK_DIGITALDOC;

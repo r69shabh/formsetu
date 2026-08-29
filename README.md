@@ -2,7 +2,7 @@
 
 FormSetu is a modern, accessible, schema-driven public form filling engine designed to streamline citizen interactions with government services, scholarships, and departmental applications.
 
-It reimagines public portals by unifying synthetic DigiLocker authentication, 22 official Indian languages plus conversational Hinglish, WhatsApp-style hold-to-speak voice input, and seamless schema-driven validation into a clean desktop and mobile experience.
+It reimagines public portals by unifying synthetic DigitalDoc authentication, 22 official Indian languages plus conversational Hinglish, WhatsApp-style hold-to-speak voice input, and seamless schema-driven validation into a clean desktop and mobile experience.
 
 ---
 
@@ -21,12 +21,12 @@ It reimagines public portals by unifying synthetic DigiLocker authentication, 22
 ## Key Features
 
 - **Multi-Lingual Engine (22 Indian Languages + Hinglish)**: Complete i18n support spanning Hindi, Bengali, Marathi, Tamil, Telugu, Gujarati, Kannada, Malayalam, Punjabi, Odia, Assamese, and conversational Hinglish.
-- **Synthetic DigiLocker Integration**: Secure mobile number + OTP verification flow that automatically fetches and verifies citizen records (Aadhaar, Caste Certificate, Income Certificate).
+- **Synthetic DigitalDoc Integration**: Secure mobile number + OTP verification flow that automatically fetches and verifies citizen records (Aadhaar, Caste Certificate, Income Certificate).
 - **Dual-Mode Schema Renderer**:
   - **Guided View**: Distraction-free, single-question card flow with `< Prev`, `1/10` counter, and `Next >` navigation.
   - **Simple View**: Complete, all-in-one form for fast scanning and bulk editing.
 - **Hold-to-Speak Voice Dictation**: WhatsApp-style voice note interaction on every field using browser-native Web Speech API. Hold to speak, release to instantly transcribe.
-- **Verified DigiLocker Notch Badges**: Visual bottom-attached badge pills displaying verified data origin with rounded corners on all inputs.
+- **Verified DigitalDoc Notch Badges**: Visual bottom-attached badge pills displaying verified data origin with rounded corners on all inputs.
 - **A4 Document Preview & Upload Dropzone**: Authentic A4 aspect-ratio previews for prefilled certificates, with dashed drag-and-drop replacement zones for empty documents.
 - **Application Tracker & Status Timeline**: Dynamic timeline tracking from application receipt, document verification, eligibility review, to decision dispatch.
 
@@ -40,7 +40,7 @@ It reimagines public portals by unifying synthetic DigiLocker authentication, 22
 │  React 19 + Vite + Lucide Icons + Pure CSS Design System                   │
 │                                                                             │
 │  ┌────────────────────┐  ┌────────────────────┐  ┌───────────────────────┐  │
-│  │  Language Selector │─▶│  DigiLocker Auth   │─▶│   Schema Renderer     │  │
+│  │  Language Selector │─▶│  DigitalDoc Auth   │─▶│   Schema Renderer     │  │
 │  │  (22 Langs + Hing) │  │  (Mobile + OTP)    │  │ (Guided / Simple Mode)│  │
 │  └────────────────────┘  └────────────────────┘  └───────────┬───────────┘  │
 │                                                              │              │
@@ -55,7 +55,7 @@ It reimagines public portals by unifying synthetic DigiLocker authentication, 22
 │                                                                             │
 │  • GET  /api/forms/:id          → Schema definition & field metadata        │
 │  • POST /api/auth/mock          → Mobile & OTP verification                 │
-│  • POST /api/prefill            → DigiLocker document & field extractor     │
+│  • POST /api/prefill            → DigitalDoc document & field extractor     │
 │  • POST /api/validate           → Zod schema validation                     │
 │  • POST /api/submit             → Government payload generator & reference  │
 │  • GET  /api/status/:reference  → Live application status & stage timeline  │
@@ -67,7 +67,7 @@ It reimagines public portals by unifying synthetic DigiLocker authentication, 22
 ## User Flow & Lifecycle
 
 ```text
-[1. Choose Language] ──▶ [2. DigiLocker Sign In] ──▶ [3. Auto-Prefill & Hydrate]
+[1. Choose Language] ──▶ [2. DigitalDoc Sign In] ──▶ [3. Auto-Prefill & Hydrate]
                                                                  │
   ┌──────────────────────────────────────────────────────────────┘
   ▼
@@ -82,8 +82,8 @@ It reimagines public portals by unifying synthetic DigiLocker authentication, 22
 ```
 
 1. **Language Selection**: Citizen chooses their preferred language (e.g. English, Hindi, Hinglish, Marathi, Tamil, etc.).
-2. **DigiLocker Verification**: Enters a 10-digit mobile number and receives/enters a 6-digit mock OTP (`123456`).
-3. **Auto-Prefill Engine**: The backend matches Aadhaar and certificates from DigiLocker, mapping them directly to schema fields with bottom-attached verified badges.
+2. **DigitalDoc Verification**: Enters a 10-digit mobile number and receives/enters a 6-digit mock OTP (`123456`).
+3. **Auto-Prefill Engine**: The backend matches Aadhaar and certificates from DigitalDoc, mapping them directly to schema fields with bottom-attached verified badges.
 4. **Interactive Form Filling**: Citizen navigates through the form using either Guided mode (one question at a time) or Simple mode (full document view). Any field can be dictated by holding the mic icon.
 5. **Document Verification**: Class 10/12 marksheet and income certificates can be viewed in true A4 ratio or replaced via dropzones.
 6. **Final Review**: Form displays a clean summary of all verified and manual inputs.
@@ -98,7 +98,7 @@ The backend is powered by **Express 5** and **Zod** (`server/index.js`).
 ### 1. Form Schema Retrieval
 `GET /api/forms/:formId`
 
-Returns the full schema definition including field types, validation rules, DigiLocker mapping paths, and localized prompts.
+Returns the full schema definition including field types, validation rules, DigitalDoc mapping paths, and localized prompts.
 
 **Example Response (`/api/forms/form25d`):**
 ```json
@@ -131,7 +131,7 @@ Returns the full schema definition including field types, validation rules, Digi
 }
 ```
 
-### 2. Mock DigiLocker Authentication
+### 2. Mock DigitalDoc Authentication
 `POST /api/auth/mock`
 
 **Request Payload:**
@@ -153,10 +153,10 @@ Returns the full schema definition including field types, validation rules, Digi
 }
 ```
 
-### 3. DigiLocker Document Prefill
+### 3. DigitalDoc Document Prefill
 `POST /api/prefill`
 
-Maps synthetic DigiLocker document data (`MOCK_DIGILOCKER`) directly into the target form schema values, document objects, and provenance tracking sources.
+Maps synthetic DigitalDoc document data (`MOCK_DIGILOCKER`) directly into the target form schema values, document objects, and provenance tracking sources.
 
 **Request Payload:**
 ```json
@@ -180,16 +180,16 @@ Maps synthetic DigiLocker document data (`MOCK_DIGILOCKER`) directly into the ta
     "incomeCertificate": {
       "name": "income-cert-2025.pdf",
       "size": "1.2 MB",
-      "source": "digilocker",
+      "source": "digitaldoc",
       "verified": true
     }
   },
   "sources": {
-    "name": "digilocker",
-    "dob": "digilocker",
-    "category": "digilocker",
-    "state": "digilocker",
-    "annualIncome": "digilocker"
+    "name": "digitaldoc",
+    "dob": "digitaldoc",
+    "category": "digitaldoc",
+    "state": "digitaldoc",
+    "annualIncome": "digitaldoc"
   },
   "matchedFields": 5,
   "matchedDocuments": 1

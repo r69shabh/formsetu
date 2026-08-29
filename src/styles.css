@@ -244,7 +244,7 @@ button:disabled {
 }
 
 /* ==========================================================================
-   Input Box & DigiLocker Card (Img 1)
+   Input Box & DigitalDoc Card (Img 1)
    ========================================================================== */
 
 .input-card {
@@ -254,7 +254,7 @@ button:disabled {
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
-/* Grey outline when NOT fetched from DigiLocker */
+/* Grey outline when NOT fetched from DigitalDoc */
 .input-card.is-standard {
   border: 2px solid #d5ddd8;
 }
@@ -264,8 +264,8 @@ button:disabled {
   box-shadow: 0 0 0 3px rgba(17, 24, 22, 0.08);
 }
 
-/* Purple outline and outer glow when fetched from DigiLocker */
-.input-card.is-digilocker {
+/* Purple outline and outer glow when fetched from DigitalDoc */
+.input-card.is-digitaldoc, .input-card.is-digilocker {
   border: 2px solid var(--purple);
   box-shadow: 0 0 0 4px var(--purple-soft);
 }
@@ -304,7 +304,7 @@ button:disabled {
   white-space: nowrap;
 }
 
-/* Solid Purple DigiLocker Bottom Bar */
+/* Solid Purple DigitalDoc Bottom Bar */
 .input-card-badge {
   background: var(--purple);
   color: #ffffff;
@@ -1699,7 +1699,7 @@ button:disabled {
 }
 
 /* ==========================================================================
-   DigiLocker Auth Screens
+   DigitalDoc Auth Screens
    ========================================================================== */
 .auth-stage {
   max-width: 520px;

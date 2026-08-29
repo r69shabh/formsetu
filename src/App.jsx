@@ -37,7 +37,7 @@ export const INDIAN_LANGUAGES = [
 
 function App() {
   const [schema, setSchema] = useState(null);
-  const [phase, setPhase] = useState('language'); // 'language' -> 'digilocker_mobile' -> 'digilocker_otp' -> 'connecting' -> 'form' -> 'review' -> 'status'
+  const [phase, setPhase] = useState('language'); // 'language' -> 'digitaldoc_mobile' -> 'digitaldoc_otp' -> 'connecting' -> 'form' -> 'review' -> 'status'
   const [lang, setLang] = useState('en');
   const [mobile, setMobile] = useState('9876543210');
   const [values, setValues] = useState({});
@@ -128,7 +128,7 @@ function App() {
         setToast(`${payload.matchedDocuments || 3} documents verified & ready.`);
       }, 1300);
     } catch (error) { 
-      setPhase('digilocker_otp'); 
+      setPhase('digitaldoc_otp'); 
       setToast(error.message); 
     } finally { 
       setBusy(false); 
@@ -216,7 +216,7 @@ function App() {
         stage: 'Under Department Review',
         timeline: [
           { title: 'Application Submitted', detail: 'Application received and registered on portal.', state: 'complete' },
-          { title: 'DigiLocker Verification', detail: 'Identity, marksheet and income records verified.', state: 'complete' },
+          { title: 'DigitalDoc Verification', detail: 'Identity, marksheet and income records verified.', state: 'complete' },
           { title: 'Department Scrutiny', detail: 'Verification officer reviewing eligibility.', state: 'complete' },
           { title: 'Final Approval & Disbursal', detail: 'Sanction order and direct bank transfer.', state: 'pending' }
         ]
@@ -235,22 +235,22 @@ function App() {
           languages={INDIAN_LANGUAGES}
           selected={lang}
           onSelect={(code) => setLang(code)}
-          onContinue={() => setPhase('digilocker_mobile')}
+          onContinue={() => setPhase('digitaldoc_mobile')}
           lang={lang}
         />
       </Shell>
     );
   }
 
-  // 2. DigiLocker Mobile Input Screen
-  if (phase === 'digilocker_mobile') {
+  // 2. DigitalDoc Mobile Input Screen
+  if (phase === 'digitaldoc_mobile') {
     return (
       <Shell schema={schema} lang={lang} setLang={setLang}>
         <AuthMobile 
           mobile={mobile}
           setMobile={setMobile}
           onBack={() => setPhase('language')}
-          onNext={() => setPhase('digilocker_otp')}
+          onNext={() => setPhase('digitaldoc_otp')}
           onTrack={() => track(`${schema?.id === 'nsp' ? 'NSP' : 'INC'}-2026-88192`)}
           lang={lang}
         />
@@ -258,13 +258,13 @@ function App() {
     );
   }
 
-  // 3. DigiLocker OTP Verification Screen
-  if (phase === 'digilocker_otp') {
+  // 3. DigitalDoc OTP Verification Screen
+  if (phase === 'digitaldoc_otp') {
     return (
       <Shell schema={schema} lang={lang} setLang={setLang}>
         <AuthOTP 
           mobile={mobile}
-          onBack={() => setPhase('digilocker_mobile')}
+          onBack={() => setPhase('digitaldoc_mobile')}
           onSubmit={authenticate}
           busy={busy}
           lang={lang}
@@ -490,8 +490,8 @@ function AuthMobile({ mobile, setMobile, onBack, onNext, onTrack, lang }) {
   return (
     <main className="single-stage auth-stage reveal">
       <div className="stage-intro text-center">
-        <h1>{t(lang, 'signin_digilocker')}</h1>
-        <p>{t(lang, 'signin_digilocker_sub')}</p>
+        <h1>{t(lang, 'signin_digitaldoc')}</h1>
+        <p>{t(lang, 'signin_digitaldoc_sub')}</p>
       </div>
       
       <div className="auth-card-wrapper">
@@ -771,13 +771,13 @@ function FieldControl({ field, value, source, document, onChange, onChoose, onUp
     }
   };
 
-  const badgeText = t(lang, 'fetched_via_digilocker');
+  const badgeText = t(lang, 'fetched_via_digitaldoc');
 
   if (field.type === 'file') {
     if (document) {
       return (
         <div className={`document-preview-container ${error ? 'has-error' : ''}`}>
-          <div className={`input-card ${source ? 'is-digilocker' : 'is-standard'}`} style={{ cursor: 'pointer' }} onClick={() => onPreview(document)}>
+          <div className={`input-card ${source ? 'is-digitaldoc' : 'is-standard'}`} style={{ cursor: 'pointer' }} onClick={() => onPreview(document)}>
             <div className="mockup-paper-sheet" role="button" tabIndex={0}>
               <div className="mockup-sheet-inner">
                 <div className="sheet-heading">Cardboard, Inc.</div>
@@ -841,7 +841,7 @@ function FieldControl({ field, value, source, document, onChange, onChoose, onUp
   }
   if (field.type === 'category') {
     return (
-      <div className={`input-card ${source ? 'is-digilocker' : 'is-standard'} ${error ? 'input-error' : ''}`}>
+      <div className={`input-card ${source ? 'is-digitaldoc' : 'is-standard'} ${error ? 'input-error' : ''}`}>
         <div className="input-card-field">
           <select value={value} onChange={(event) => onChange(field.id, event.target.value)}>
             <option value="">{field.placeholder}</option>
@@ -860,7 +860,7 @@ function FieldControl({ field, value, source, document, onChange, onChoose, onUp
   }
   if (field.type === 'date') {
     return (
-      <div className={`input-card ${source ? 'is-digilocker' : 'is-standard'} ${error ? 'input-error' : ''}`}>
+      <div className={`input-card ${source ? 'is-digitaldoc' : 'is-standard'} ${error ? 'input-error' : ''}`}>
         <div className="input-card-field">
           <input type="date" value={dateForInput(value)} onKeyDown={handleKeyDown} onChange={(event) => onChange(field.id, event.target.value)} />
         <MicButton onResult={(t) => onChange(field.id, t)} />
@@ -875,7 +875,7 @@ function FieldControl({ field, value, source, document, onChange, onChoose, onUp
     );
   }
   return (
-    <div className={`input-card ${source ? 'is-digilocker' : 'is-standard'} ${error ? 'input-error' : ''}`}>
+    <div className={`input-card ${source ? 'is-digitaldoc' : 'is-standard'} ${error ? 'input-error' : ''}`}>
       <div className="input-card-field">
         <input
           value={value}
@@ -969,7 +969,7 @@ function Review({ schema, values, sources, documents, payload, mismatch, onMisma
               <div className="review-val">
                 <strong>{field.type === 'file' ? (documents[field.id]?.name || t(lang, 'not_provided')) : field.type === 'date' ? displayDate(values[field.id]) : (values[field.id] === 'Yes' ? t(lang, 'yes') : values[field.id] === 'No' ? t(lang, 'no') : values[field.id] || t(lang, 'not_provided'))}</strong>
                 {sources[field.id] && (
-                  <span><Sparkles size={12} /> {sources[field.id] === 'digilocker' ? 'DigiLocker' : sources[field.id]}</span>
+                  <span><Sparkles size={12} /> {sources[field.id] === 'digitaldoc' ? 'DigitalDoc' : sources[field.id]}</span>
                 )}
               </div>
             </div>
@@ -1075,7 +1075,7 @@ function Status({ status, onRestart, lang }) {
         <div className="timeline-wrap">
           {(status?.timeline || [
             { title: 'Application Submitted', detail: 'Application received and registered on portal.', state: 'complete' },
-            { title: 'DigiLocker Verification', detail: 'Identity, marksheet, and income records verified.', state: 'complete' },
+            { title: 'DigitalDoc Verification', detail: 'Identity, marksheet, and income records verified.', state: 'complete' },
             { title: 'Department Scrutiny', detail: 'Verification officer reviewing eligibility.', state: 'complete' },
             { title: 'Final Approval & Disbursal', detail: 'Sanction order and direct bank transfer.', state: 'pending' }
           ]).map((item, idx) => (

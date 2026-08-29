@@ -1,6 +1,6 @@
 import express from 'express';
 import { z } from 'zod';
-import { FORM_SCHEMAS, MOCK_DIGILOCKER, buildSubmissionPayload, getInitialState } from '../src/data/forms.js';
+import { FORM_SCHEMAS, MOCK_DIGITALDOC, buildSubmissionPayload, getInitialState } from '../src/data/forms.js';
 
 const app = express();
 const port = Number(process.env.PORT || 8787);
@@ -47,8 +47,8 @@ app.post('/api/prefill', async (request, response) => {
   if (!parsed.success || !getSchema(parsed.data.formId)) return response.status(400).json({ error: 'A valid formId is required.' });
   await wait(700);
   const schema = getSchema(parsed.data.formId);
-  const prefill = getInitialState(schema, MOCK_DIGILOCKER);
-  return response.json({ ...prefill, mockResponse: MOCK_DIGILOCKER, matchedDocuments: Object.keys(prefill.documents).length, matchedFields: Object.keys(prefill.sources).length, disclaimer: 'Synthetic data only — no real DigiLocker account is contacted.' });
+  const prefill = getInitialState(schema, MOCK_DIGITALDOC);
+  return response.json({ ...prefill, mockResponse: MOCK_DIGITALDOC, matchedDocuments: Object.keys(prefill.documents).length, matchedFields: Object.keys(prefill.sources).length, disclaimer: 'Synthetic data only — no real DigitalDoc account is contacted.' });
 });
 
 app.post('/api/validate', (request, response) => {
@@ -75,8 +75,8 @@ app.post('/api/chat', async (request, response) => {
     reply = hindi ? `आप इनमें से चुन सकते हैं: ${field.options.join(', ')}.` : `You can choose one of these: ${field.options.join(', ')}.`;
     action = { type: 'show_options', fieldId: field.id };
   }
-  if (message.includes('digilocker') || message.includes('document')) {
-    reply = hindi ? 'मैं आपके नकली DigiLocker दस्तावेज़ों से मिलान की गई जानकारी दिखा सकता हूँ। हर उत्तर को आगे बढ़ने से पहले आप बदल सकते हैं।' : 'I can show the information matched from your synthetic DigiLocker documents. You can still change every answer before you continue.';
+  if (message.includes('digitaldoc') || message.includes('document')) {
+    reply = hindi ? 'मैं आपके नकली DigitalDoc दस्तावेज़ों से मिलान की गई जानकारी दिखा सकता हूँ। हर उत्तर को आगे बढ़ने से पहले आप बदल सकते हैं।' : 'I can show the information matched from your synthetic DigitalDoc documents. You can still change every answer before you continue.';
     action = { type: 'prefill' };
   }
   return response.json({ reply, action, provider: 'Local assistant simulator' });
