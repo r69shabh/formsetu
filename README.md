@@ -1,8 +1,8 @@
 # FormSetu 🇮🇳
 
-FormSetu is a modern, accessible, schema-driven public form filling engine designed to streamline citizen interactions with government services, scholarships, and departmental applications.
+FormSetu is a modern, accessible, schema-driven public form filling engine designed to streamline applications for civic services, benefits, and departmental programs.
 
-It reimagines public portals by unifying synthetic DigitalDoc authentication, 22 official Indian languages plus conversational Hinglish, WhatsApp-style hold-to-speak voice input, and seamless schema-driven validation into a clean desktop and mobile experience.
+It reimagines public portals by unifying synthetic DigitalDoc authentication, 22 Indian languages plus conversational Hinglish, WhatsApp-style hold-to-speak voice input, and seamless schema-driven validation into a clean desktop and mobile experience.
 
 ---
 
@@ -21,7 +21,7 @@ It reimagines public portals by unifying synthetic DigitalDoc authentication, 22
 ## Key Features
 
 - **Multi-Lingual Engine (22 Indian Languages + Hinglish)**: Complete i18n support spanning Hindi, Bengali, Marathi, Tamil, Telugu, Gujarati, Kannada, Malayalam, Punjabi, Odia, Assamese, and conversational Hinglish.
-- **Synthetic DigitalDoc Integration**: Secure mobile number + OTP verification flow that automatically fetches and verifies citizen records (Aadhaar, Caste Certificate, Income Certificate).
+- **Synthetic DigitalDoc Integration**: Secure mobile number + OTP verification flow that automatically fetches and verifies synthetic citizen records (Civic ID, category record, income record).
 - **Dual-Mode Schema Renderer**:
   - **Guided View**: Distraction-free, single-question card flow with `< Prev`, `1/10` counter, and `Next >` navigation.
   - **Simple View**: Complete, all-in-one form for fast scanning and bulk editing.
@@ -57,7 +57,7 @@ It reimagines public portals by unifying synthetic DigitalDoc authentication, 22
 │  • POST /api/auth/mock          → Mobile & OTP verification                 │
 │  • POST /api/prefill            → DigitalDoc document & field extractor     │
 │  • POST /api/validate           → Zod schema validation                     │
-│  • POST /api/submit             → Government payload generator & reference  │
+│  • POST /api/submit             → Civic payload generator & reference      │
 │  • GET  /api/status/:reference  → Live application status & stage timeline  │
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
@@ -83,11 +83,11 @@ It reimagines public portals by unifying synthetic DigitalDoc authentication, 22
 
 1. **Language Selection**: Citizen chooses their preferred language (e.g. English, Hindi, Hinglish, Marathi, Tamil, etc.).
 2. **DigitalDoc Verification**: Enters a 10-digit mobile number and receives/enters a 6-digit mock OTP (`123456`).
-3. **Auto-Prefill Engine**: The backend matches Aadhaar and certificates from DigitalDoc, mapping them directly to schema fields with bottom-attached verified badges.
+3. **Auto-Prefill Engine**: The backend matches synthetic Civic ID and certificate records from DigitalDoc, mapping them directly to schema fields with bottom-attached verified badges.
 4. **Interactive Form Filling**: Citizen navigates through the form using either Guided mode (one question at a time) or Simple mode (full document view). Any field can be dictated by holding the mic icon.
 5. **Document Verification**: Class 10/12 marksheet and income certificates can be viewed in true A4 ratio or replaced via dropzones.
 6. **Final Review**: Form displays a clean summary of all verified and manual inputs.
-7. **Submission & Tracking**: Submits the validated schema to the backend, receives a permanent reference number (`ITD-2026-XXXXX`), and displays the official status timeline.
+7. **Submission & Tracking**: Submits the validated schema to the backend, receives a reference number (`CIV-2026-XXXXX`), and displays the live status timeline.
 
 ---
 
@@ -105,7 +105,7 @@ Returns the full schema definition including field types, validation rules, Digi
 {
   "id": "nsp",
   "title": "Form 25D",
-  "service": "Income Tax Dept, GoI",
+  "service": "Civic Revenue Services",
   "fields": [
     {
       "id": "name",
@@ -199,7 +199,7 @@ Maps synthetic DigitalDoc document data (`MOCK_DIGILOCKER`) directly into the ta
 ### 4. Form Submission
 `POST /api/submit`
 
-Validates the completed form against schema rules and produces the official normalized government backend payload.
+Validates the completed form against schema rules and produces a normalized civic-service payload.
 
 **Request Payload:**
 ```json

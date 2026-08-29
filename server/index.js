@@ -9,7 +9,7 @@ const submissions = new Map();
 app.use(express.json({ limit: '1mb' }));
 
 const wait = (milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds));
-const getSchema = (id) => FORM_SCHEMAS[id];
+const getSchema = (id) => FORM_SCHEMAS[id] || (id === 'nsp' ? FORM_SCHEMAS.form25d : undefined);
 
 function validate(schema, values = {}, documents = {}) {
   const issues = {};
@@ -23,17 +23,22 @@ function validate(schema, values = {}, documents = {}) {
   return issues;
 }
 
-app.get('/api/health', (_request, response) => response.json({ ok: true, provider: 'FormSetu local API', time: new Date().toISOString() }));
+const router = express.Router();
 
-app.get('/api/forms', (_request, response) => response.json(Object.values(FORM_SCHEMAS).map(({ id, title, service, description, fields }) => ({ id, title, service, description, fieldCount: fields.length }))));
+router.get('/health', (_request, response) => response.json({ ok: true, provider: 'FormSetu local API', time: new Date().toISOString() }));
 
-app.get('/api/forms/:formId', (request, response) => {
+router.get('/forms', (_request, response) => {
+  const forms = [...new Map(Object.values(FORM_SCHEMAS).map((schema) => [schema.id, schema])).values()];
+  return response.json(forms.map(({ id, title, service, description, fields }) => ({ id, title, service, description, fieldCount: fields.length })));
+});
+
+router.get('/forms/:formId', (request, response) => {
   const schema = getSchema(request.params.formId);
   if (!schema) return response.status(404).json({ error: 'Form not found.' });
   return response.json(schema);
 });
 
-app.post('/api/auth/mock', async (request, response) => {
+router.post('/auth/mock', async (request, response) => {
   const parsed = z.object({ formId: z.string(), mobile: z.string(), mode: z.enum(['otp', 'password']).default('otp'), credential: z.string().min(1) }).safeParse(request.body);
   if (!parsed.success || !getSchema(parsed.data.formId)) return response.status(400).json({ error: 'A valid form and sign-in details are required.' });
   if (!/^\d{10}$/.test(parsed.data.mobile.replace(/\D/g, ''))) return response.status(422).json({ error: 'Use a 10-digit mobile number.' });
@@ -42,23 +47,23 @@ app.post('/api/auth/mock', async (request, response) => {
   return response.json({ authenticated: true, method: parsed.data.mode, disclaimer: 'Mock authentication only — no credentials were checked.' });
 });
 
-app.post('/api/prefill', async (request, response) => {
+router.post('/prefill', async (request, response) => {
   const parsed = z.object({ formId: z.string() }).safeParse(request.body);
   if (!parsed.success || !getSchema(parsed.data.formId)) return response.status(400).json({ error: 'A valid formId is required.' });
   await wait(700);
   const schema = getSchema(parsed.data.formId);
   const prefill = getInitialState(schema, MOCK_DIGITALDOC);
-  return response.json({ ...prefill, mockResponse: MOCK_DIGITALDOC, matchedDocuments: Object.keys(prefill.documents).length, matchedFields: Object.keys(prefill.sources).length, disclaimer: 'Synthetic data only — no real DigitalDoc account is contacted.' });
+  return response.json({ ...prefill, mockResponse: MOCK_DIGITALDOC, matchedDocuments: Object.keys(prefill.documents).length, matchedFields: Object.keys(prefill.sources).length, disclaimer: 'Synthetic data only — no external DigitalDoc account is contacted.' });
 });
 
-app.post('/api/validate', (request, response) => {
+router.post('/validate', (request, response) => {
   const parsed = z.object({ formId: z.string(), values: z.record(z.string(), z.string()).default({}), documents: z.record(z.string(), z.any()).default({}) }).safeParse(request.body);
   if (!parsed.success || !getSchema(parsed.data.formId)) return response.status(400).json({ error: 'Invalid validation payload.' });
   const issues = validate(getSchema(parsed.data.formId), parsed.data.values, parsed.data.documents);
   return response.json({ valid: Object.keys(issues).length === 0, issues });
 });
 
-app.post('/api/chat', async (request, response) => {
+router.post('/chat', async (request, response) => {
   const parsed = z.object({ formId: z.string(), fieldId: z.string().optional(), message: z.string().trim().min(1).max(500), mode: z.enum(['simple', 'detailed']).default('simple'), language: z.enum(['English', 'Hindi']).default('English') }).safeParse(request.body);
   if (!parsed.success || !getSchema(parsed.data.formId)) return response.status(400).json({ error: 'Please send a valid message.' });
   await wait(360);
@@ -82,7 +87,7 @@ app.post('/api/chat', async (request, response) => {
   return response.json({ reply, action, provider: 'Local assistant simulator' });
 });
 
-app.post('/api/submit', async (request, response) => {
+router.post('/submit', async (request, response) => {
   const parsed = z.object({ formId: z.string(), values: z.record(z.string(), z.string()).default({}), documents: z.record(z.string(), z.any()).default({}), simulateMismatch: z.boolean().default(false) }).safeParse(request.body);
   if (!parsed.success || !getSchema(parsed.data.formId)) return response.status(400).json({ error: 'Invalid submission payload.' });
   const schema = getSchema(parsed.data.formId);
@@ -102,20 +107,22 @@ app.post('/api/submit', async (request, response) => {
   return response.json({ status: 'success', reference, referenceNumber: reference, stage: 'Document check', submittedPayload: payload, payload, message: 'Your prototype submission was accepted.' });
 });
 
-app.get('/api/status/:reference', (request, response) => {
+router.get('/status/:reference', (request, response) => {
   const item = submissions.get(request.params.reference);
   if (!item) return response.status(404).json({ error: 'Reference not found.' });
   return response.json({ ...item, timeline: [
     { title: 'Application received', detail: 'Your mock submission was accepted.', state: 'complete' },
     { title: 'Document check', detail: 'Documents are being checked for clarity and match.', state: 'current' },
-    { title: 'Eligibility review', detail: 'The department will review eligibility next.', state: 'upcoming' },
+    { title: 'Civic review', detail: 'A review officer will check eligibility next.', state: 'upcoming' },
     { title: 'Decision shared', detail: 'An update will appear here when the review finishes.', state: 'upcoming' }
   ] });
 });
+
+app.use('/api', router);
+app.use('/', router);
 
 if (!process.env.VERCEL && process.env.NODE_ENV !== 'test') {
   app.listen(port, '127.0.0.1', () => console.log(`FormSetu API listening on http://127.0.0.1:${port}`));
 }
 
 export default app;
-

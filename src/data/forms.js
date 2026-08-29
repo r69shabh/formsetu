@@ -2,13 +2,13 @@
 export const MOCK_DIGITALDOC = {
   digitaldoc: {
     identity: {
-      fullName: { value: 'Ananya Sharma', source: 'Aadhaar card' },
-      dob: { value: '2002-09-05', source: 'Aadhaar card' },
-      pan: { value: 'ABCDE1234F', source: 'Revenue Authority' },
-      state: { value: 'Maharashtra', source: 'Aadhaar card' }
+      fullName: { value: 'Ananya Sharma', source: 'Civic ID card' },
+      dob: { value: '2002-09-05', source: 'Civic ID card' },
+      pan: { value: 'ABCDE1234F', source: 'Civic Tax Registry' },
+      state: { value: 'Maharashtra', source: 'Civic ID card' }
     },
     tax: {
-      category: { value: 'Individual (Resident)', source: 'Revenue Authority' }
+      category: { value: 'Individual (Resident)', source: 'Civic Tax Registry' }
     },
     income: {
       annualIncome: { value: '96000', source: 'Income certificate' }
@@ -22,8 +22,8 @@ export const MOCK_DIGITALDOC = {
 const form25DFields = [
   {
     id: 'fullName', label: 'What is your name?', shortLabel: 'Full name', type: 'text', required: true,
-    options: [], prefillSource: 'digitaldoc.identity.fullName', chatPrompt: 'I found your name on your Aadhaar card. Is “Ananya Sharma” correct?',
-    backendField: 'applicant_name', placeholder: 'e.g. Ananya Sharma', help: 'Use the name exactly as it appears on your PAN or Aadhaar card.'
+    options: [], prefillSource: 'digitaldoc.identity.fullName', chatPrompt: 'I found your name on your Civic ID card. Is “Ananya Sharma” correct?',
+    backendField: 'applicant_name', placeholder: 'e.g. Ananya Sharma', help: 'Use the name exactly as it appears on your Civic ID card.'
   },
   {
     id: 'phone', label: 'Which mobile number should receive updates?', shortLabel: 'Mobile number', type: 'text', format: 'phone', inputMode: 'numeric', required: true,
@@ -32,13 +32,13 @@ const form25DFields = [
   },
   {
     id: 'dob', label: 'What is your date of birth?', shortLabel: 'Date of birth', type: 'date', required: true,
-    options: [], prefillSource: 'digitaldoc.identity.dob', chatPrompt: 'Your Aadhaar card shows 05/09/2002 as your date of birth. Is that right?',
-    backendField: 'date_of_birth', placeholder: 'DD / MM / YYYY', help: 'This should match your official identity documents.'
+    options: [], prefillSource: 'digitaldoc.identity.dob', chatPrompt: 'Your Civic ID card shows 05/09/2002 as your date of birth. Is that right?',
+    backendField: 'date_of_birth', placeholder: 'DD / MM / YYYY', help: 'This should match your identity records.'
   },
   {
     id: 'pan', label: 'What is your Permanent Account Number (PAN)?', shortLabel: 'PAN number', type: 'text', required: true,
     options: [], prefillSource: 'digitaldoc.identity.pan', chatPrompt: 'I retrieved PAN ABCDE1234F from verified tax records. Is this correct?',
-    backendField: 'pan_number', placeholder: 'e.g. ABCDE1234F', help: 'Verified 10-digit PAN linked with Aadhaar.'
+    backendField: 'pan_number', placeholder: 'e.g. ABCDE1234F', help: 'Verified 10-character tax ID linked with your Civic ID.'
   },
   {
     id: 'category', label: 'What is your taxpayer filing category?', shortLabel: 'Filing status', type: 'category', required: true,
@@ -47,7 +47,7 @@ const form25DFields = [
   },
   {
     id: 'state', label: 'Which state do you currently live in?', shortLabel: 'State of residence', type: 'category', required: true,
-    options: ['Maharashtra', 'Delhi', 'Karnataka', 'Gujarat', 'Tamil Nadu', 'Uttar Pradesh', 'Rajasthan'], prefillSource: 'digitaldoc.identity.state', chatPrompt: 'Your Aadhaar lists Maharashtra as your state. Is that your residential state?',
+    options: ['Maharashtra', 'Delhi', 'Karnataka', 'Gujarat', 'Tamil Nadu', 'Uttar Pradesh', 'Rajasthan'], prefillSource: 'digitaldoc.identity.state', chatPrompt: 'Your Civic ID lists Maharashtra as your state. Is that your residential state?',
     backendField: 'residential_state', placeholder: 'Choose your state', help: 'Select your current residential state.'
   },
   {
@@ -80,12 +80,12 @@ const form25DFields = [
 const incomeFields = [
   {
     id: 'applicantName', label: 'What is your full name?', shortLabel: 'Full name', type: 'text', required: true,
-    options: [], prefillSource: 'digitaldoc.identity.fullName', chatPrompt: 'I found your name on your Aadhaar card. Is “Ananya Sharma” correct?',
+    options: [], prefillSource: 'digitaldoc.identity.fullName', chatPrompt: 'I found your name on your Civic ID card. Is “Ananya Sharma” correct?',
     backendField: 'applicant_name', placeholder: 'e.g. Ananya Sharma', help: 'Use the name shown on your identity document.'
   },
   {
     id: 'purpose', label: 'Why do you need this certificate?', shortLabel: 'Purpose', type: 'category', required: true,
-    options: ['Education', 'Housing', 'Government scheme', 'Other'], prefillSource: null, defaultValue: 'Education', chatPrompt: 'What is the main reason you need this income certificate?',
+    options: ['Education', 'Housing', 'Public program', 'Other'], prefillSource: null, defaultValue: 'Education', chatPrompt: 'What is the main reason you need this income certificate?',
     backendField: 'certificate_purpose', placeholder: 'Choose a purpose', help: 'Choose the reason that best matches your request.'
   },
   {
@@ -96,6 +96,11 @@ const incomeFields = [
 ];
 
 export const FORM_SCHEMAS = {
+  // Canonical ID used by the app and API. Legacy aliases remain for old links.
+  form25d: {
+    formId: 'form25d', id: 'form25d', title: 'Form 25D', service: 'Revenue & Taxation Services', department: 'Dept of Public Revenue',
+    description: 'Assessment & Tax Clearance Declaration · AY 2026–27', accent: 'navy', fields: form25DFields
+  },
   form14a: {
     formId: 'form25d', id: 'form25d', title: 'Form 25D', service: 'Revenue & Taxation Services', department: 'Dept of Public Revenue',
     description: 'Assessment & Tax Clearance Declaration · AY 2026–27', accent: 'navy', fields: form25DFields
@@ -105,7 +110,7 @@ export const FORM_SCHEMAS = {
     description: 'Assessment & Tax Clearance Declaration · AY 2026–27', accent: 'navy', fields: form25DFields
   },
   income: {
-    formId: 'income', id: 'income', title: 'Income certificate request', service: 'Citizen services', department: 'Revenue Department',
+    formId: 'income', id: 'income', title: 'Income certificate request', service: 'Civic services', department: 'Civic Revenue Office',
     description: 'A short form using the same FormSetu engine', accent: 'violet', fields: incomeFields
   }
 };

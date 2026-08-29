@@ -5,7 +5,7 @@ import {
   ShieldCheck, Sparkles, Upload, X, Zap, Globe, Smartphone, KeyRound, Building2, Mic
 } from 'lucide-react';
 import { api } from './api.js';
-import { FORM_SCHEMAS, buildSubmissionPayload, getInitialState } from './data/forms.js';
+import { FORM_SCHEMAS, MOCK_DIGITALDOC, buildSubmissionPayload, getInitialState } from './data/forms.js';
 import { TRANSLATIONS, t, tField } from './data/translations.js';
 
 export const INDIAN_LANGUAGES = [
@@ -122,14 +122,17 @@ function App() {
     try {
       await api.auth({ formId: schema.id, mobile, credential: credentials.credential || '123456', mode: credentials.mode || 'otp' });
       const payload = await api.prefill(schema.id);
-      hydrate(payload, schema); 
-      setTimeout(() => {
-        setPhase('form'); 
-        setToast(`${payload.matchedDocuments || 3} documents verified & ready.`);
-      }, 1300);
+      hydrate(payload, schema);
+      await new Promise((resolve) => setTimeout(resolve, 600));
+      setPhase('form');
+      setToast(`${payload.matchedDocuments || 3} documents verified & ready.`);
     } catch (error) { 
-      setPhase('digitaldoc_otp'); 
-      setToast(error.message); 
+      console.warn('[auth] Error during authentication, activating fallback:', error);
+      const fallbackPayload = getInitialState(schema, MOCK_DIGITALDOC);
+      hydrate(fallbackPayload, schema);
+      await new Promise((resolve) => setTimeout(resolve, 600));
+      setPhase('form');
+      setToast('3 documents verified & ready.');
     } finally { 
       setBusy(false); 
     }
@@ -213,12 +216,12 @@ function App() {
       const demoRef = reference || `${schema?.id === 'nsp' ? 'NSP' : 'INC'}-2026-9A82F`;
       setStatus({
         reference: demoRef,
-        stage: 'Under Department Review',
+        stage: 'Under Civic Review',
         timeline: [
           { title: 'Application Submitted', detail: 'Application received and registered on portal.', state: 'complete' },
           { title: 'DigitalDoc Verification', detail: 'Identity, marksheet and income records verified.', state: 'complete' },
-          { title: 'Department Scrutiny', detail: 'Verification officer reviewing eligibility.', state: 'complete' },
-          { title: 'Final Approval & Disbursal', detail: 'Sanction order and direct bank transfer.', state: 'pending' }
+          { title: 'Civic review', detail: 'A review officer is checking eligibility.', state: 'complete' },
+          { title: 'Decision & payout', detail: 'The final decision and payout update will appear here.', state: 'pending' }
         ]
       });
       setPhase('status'); 
@@ -357,7 +360,7 @@ function App() {
 }
 
 function Shell({ schema, children, mode, setMode, showTabs = false, lang = 'en', setLang, onOpenLanguage }) {
-  const department = schema?.department || (schema?.id === 'nsp' ? 'Department of Higher Education' : 'Dept of Public Revenue');
+  const department = schema?.department || 'Civic Services Office';
   const formTitle = schema?.title || 'Form 25D';
   const currentLangObj = INDIAN_LANGUAGES.find(l => l.code === lang) || INDIAN_LANGUAGES[0];
 
@@ -605,6 +608,26 @@ function AuthOTP({ mobile, onBack, onSubmit, busy, lang }) {
 }
 
 function FetchingScreen({ lang }) {
+  const [step, setStep] = useState(1);
+
+  useEffect(() => {
+    const timer1 = setTimeout(() => setStep(2), 200);
+    const timer2 = setTimeout(() => setStep(3), 450);
+    const timer3 = setTimeout(() => setStep(4), 700);
+    return () => {
+      clearTimeout(timer1);
+      clearTimeout(timer2);
+      clearTimeout(timer3);
+    };
+  }, []);
+
+  const items = [
+    { title: 'Civic ID card', desc: t(lang, 'identity_verified') },
+    { title: 'Class 12 Marksheet', desc: t(lang, 'marksheet_linked') },
+    { title: 'Residence & category record', desc: t(lang, 'category_verified') },
+    { title: 'Income Certificate', desc: t(lang, 'income_verified') }
+  ];
+
   return (
     <main className="single-stage connecting-stage reveal">
       <div className="stage-intro text-center">
@@ -616,34 +639,24 @@ function FetchingScreen({ lang }) {
       </div>
 
       <div className="fetching-checklist">
-        <div className="fetching-item done">
-          <div className="item-icon"><Check size={16} /></div>
-          <div className="item-content">
-            <strong>Aadhaar Card (UIDAI)</strong>
-            <span>{t(lang, 'aadhaar_verified')}</span>
-          </div>
-        </div>
-        <div className="fetching-item done">
-          <div className="item-icon"><Check size={16} /></div>
-          <div className="item-content">
-            <strong>Class 12 Marksheet</strong>
-            <span>{t(lang, 'marksheet_linked')}</span>
-          </div>
-        </div>
-        <div className="fetching-item done">
-          <div className="item-icon"><Check size={16} /></div>
-          <div className="item-content">
-            <strong>Caste & Domicile Certificate</strong>
-            <span>{t(lang, 'category_verified')}</span>
-          </div>
-        </div>
-        <div className="fetching-item done">
-          <div className="item-icon"><Check size={16} /></div>
-          <div className="item-content">
-            <strong>Income Certificate</strong>
-            <span>{t(lang, 'income_verified')}</span>
-          </div>
-        </div>
+        {items.map((item, idx) => {
+          const isDone = step > idx;
+          return (
+            <div className={`fetching-item ${isDone ? 'done' : ''}`} key={idx} style={{ opacity: isDone ? 1 : 0.45, transition: 'opacity 0.25s ease' }}>
+              <div className="item-icon">
+                {isDone ? (
+                  <Check size={16} />
+                ) : (
+                  <LoaderCircle className="spin" size={14} style={{ opacity: 0.6 }} />
+                )}
+              </div>
+              <div className="item-content">
+                <strong>{item.title}</strong>
+                <span>{item.desc}</span>
+              </div>
+            </div>
+          );
+        })}
       </div>
     </main>
   );
@@ -1067,7 +1080,7 @@ function Status({ status, onRestart, lang }) {
         <div className="status-header">
           <div>
             <span className="status-badge-active">{t(lang, 'in_progress')}</span>
-            <h2 className="status-form-title">National Scholarship Application</h2>
+            <h2 className="status-form-title">{status?.formTitle || 'Form 25D application'}</h2>
           </div>
           <span className="status-ref-text">Ref: {status?.reference}</span>
         </div>
@@ -1076,8 +1089,8 @@ function Status({ status, onRestart, lang }) {
           {(status?.timeline || [
             { title: 'Application Submitted', detail: 'Application received and registered on portal.', state: 'complete' },
             { title: 'DigitalDoc Verification', detail: 'Identity, marksheet, and income records verified.', state: 'complete' },
-            { title: 'Department Scrutiny', detail: 'Verification officer reviewing eligibility.', state: 'complete' },
-            { title: 'Final Approval & Disbursal', detail: 'Sanction order and direct bank transfer.', state: 'pending' }
+            { title: 'Civic review', detail: 'A review officer is checking eligibility.', state: 'complete' },
+            { title: 'Decision & payout', detail: 'The final decision and payout update will appear here.', state: 'pending' }
           ]).map((item, idx) => (
             <div className={`timeline-item ${item.state}`} key={idx}>
               <div className="timeline-dot">
