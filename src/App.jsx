@@ -5,7 +5,7 @@ import {
   ShieldCheck, Sparkles, Upload, X, Zap, Globe, Smartphone, KeyRound, Building2, Mic
 } from 'lucide-react';
 import { api } from './api.js';
-import { FORM_SCHEMAS, MOCK_DIGITALDOC, buildSubmissionPayload, getInitialState } from './data/forms.js';
+import { FORM_SCHEMAS, MOCK_DIGITALDOC, DEMO_PROFILES_LIST, getDigitalDocProfile, buildSubmissionPayload, getInitialState } from './data/forms.js';
 import { TRANSLATIONS, t, tField } from './data/translations.js';
 
 export const INDIAN_LANGUAGES = [
@@ -39,7 +39,7 @@ function App() {
   const [schema, setSchema] = useState(null);
   const [phase, setPhase] = useState('language'); // 'language' -> 'digitaldoc_mobile' -> 'digitaldoc_otp' -> 'connecting' -> 'form' -> 'review' -> 'status'
   const [lang, setLang] = useState('en');
-  const [mobile, setMobile] = useState('9876543210');
+  const [mobile, setMobile] = useState('');
   const [values, setValues] = useState({});
   const [sources, setSources] = useState({});
   const [documents, setDocuments] = useState({});
@@ -78,6 +78,7 @@ function App() {
       setMode('guided'); 
       setSubmission(null); 
       setStatus(null);
+      setMobile('');
       
       let payload = getInitialState(nextSchema);
       hydrate(payload, nextSchema);
@@ -85,6 +86,7 @@ function App() {
     } catch (error) {
       const fallback = FORM_SCHEMAS[formId] || FORM_SCHEMAS.form25d || FORM_SCHEMAS.nsp;
       setSchema(fallback);
+      setMobile('');
       hydrate(getInitialState(fallback), fallback);
       setPhase('language');
     } finally {
@@ -120,15 +122,26 @@ function App() {
     setBusy(true);
     setPhase('connecting');
     try {
-      await api.auth({ formId: schema.id, mobile, credential: credentials.credential || '123456', mode: credentials.mode || 'otp' });
-      const payload = await api.prefill(schema.id);
+      const authResult = await api.auth({ formId: schema.id, mobile, credential: credentials.credential || '123456', mode: credentials.mode || 'otp' });
+      
+      // If user already has an active submission on file, show tracking screen immediately!
+      if (authResult.hasExistingSubmission && authResult.submission) {
+        setStatus(authResult.submission);
+        await new Promise((resolve) => setTimeout(resolve, 600));
+        setPhase('status');
+        setToast(`Existing application found (${authResult.submission.reference}).`);
+        return;
+      }
+
+      const payload = await api.prefill(schema.id, mobile);
       hydrate(payload, schema);
       await new Promise((resolve) => setTimeout(resolve, 600));
       setPhase('form');
       setToast(`${payload.matchedDocuments || 3} documents verified & ready.`);
     } catch (error) { 
       console.warn('[auth] Error during authentication, activating fallback:', error);
-      const fallbackPayload = getInitialState(schema, MOCK_DIGITALDOC);
+      const profile = getDigitalDocProfile(mobile);
+      const fallbackPayload = getInitialState(schema, profile, mobile);
       hydrate(fallbackPayload, schema);
       await new Promise((resolve) => setTimeout(resolve, 600));
       setPhase('form');
@@ -198,7 +211,7 @@ function App() {
   async function submit() {
     setPhase('submitting');
     try {
-      const result = await api.submit({ formId: schema.id, values, documents, simulateMismatch });
+      const result = await api.submit({ formId: schema.id, mobile, values, documents, simulateMismatch });
       setSubmission(result); 
       setPhase('success');
     } catch (error) {
@@ -209,7 +222,7 @@ function App() {
 
   async function track(reference) {
     try { 
-      const result = await api.status(reference); 
+      const result = await api.status(reference || mobile); 
       setStatus(result); 
       setPhase('status'); 
     } catch (error) { 
@@ -514,6 +527,40 @@ function AuthMobile({ mobile, setMobile, onBack, onNext, onTrack, lang }) {
                 }
               }}
             />
+          </div>
+        </div>
+
+        <div className="demo-hint-row" style={{ flexDirection: 'column', gap: 6, alignItems: 'stretch' }}>
+          <span style={{ fontSize: '12px', color: 'var(--muted)', fontWeight: 500 }}>
+            Mock Profiles (Tap to test):
+          </span>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+            {DEMO_PROFILES_LIST.map((profile) => {
+              const isSelected = mobile === profile.mobile;
+              return (
+                <button
+                  key={profile.mobile}
+                  type="button"
+                  style={{
+                    fontSize: '11px',
+                    padding: '4px 8px',
+                    borderRadius: '8px',
+                    border: isSelected ? '1px solid #5835e5' : '1px solid #e2e7e4',
+                    background: isSelected ? '#edeafe' : '#f8faf9',
+                    color: isSelected ? '#5835e5' : '#2b3834',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px'
+                  }}
+                  onClick={() => setMobile(profile.mobile)}
+                >
+                  <strong>{profile.mobile}</strong>
+                  <span>· {profile.name.split(' ')[0]}</span>
+                  <span style={{ opacity: 0.75 }}>({profile.statusLabel})</span>
+                </button>
+              );
+            })}
           </div>
         </div>
 
@@ -1071,16 +1118,20 @@ function Status({ status, onRestart, lang }) {
   return (
     <main className="single-stage status-stage reveal">
       <div className="stage-intro text-center">
-        
         <h1>{t(lang, 'app_status_title')}</h1>
-        <p>Reference: <strong>{status?.reference || 'NSP-2026-88192'}</strong></p>
+        <p>Reference: <strong>{status?.reference || 'ITD-2026-88192'}</strong></p>
       </div>
       
       <section className="status-card">
         <div className="status-header">
           <div>
-            <span className="status-badge-active">{t(lang, 'in_progress')}</span>
+            <span className="status-badge-active">{status?.statusBadge || t(lang, 'in_progress')}</span>
             <h2 className="status-form-title">{status?.formTitle || 'Form 25D application'}</h2>
+            {status?.applicantName && (
+              <p style={{ margin: '4px 0 0', fontSize: '13px', color: 'var(--muted)' }}>
+                Applicant: <strong>{status.applicantName}</strong> {status.mobile ? `(+91 ${status.mobile})` : ''}
+              </p>
+            )}
           </div>
           <span className="status-ref-text">Ref: {status?.reference}</span>
         </div>

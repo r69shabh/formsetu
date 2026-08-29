@@ -1,4 +1,4 @@
-import { FORM_SCHEMAS, MOCK_DIGITALDOC, buildSubmissionPayload, getInitialState } from './data/forms.js';
+import { FORM_SCHEMAS, MOCK_DIGITALDOC, getDigitalDocProfile, PRELOADED_SUBMISSIONS, buildSubmissionPayload, getInitialState } from './data/forms.js';
 
 const REQUEST_TIMEOUT_MS = 3000;
 
@@ -17,7 +17,47 @@ function localValidate(schema, values = {}, documents = {}) {
   return issues;
 }
 
-const mockSubmissions = new Map();
+function getStoredSubmissions() {
+  const map = new Map();
+  // Add preloaded submissions
+  Object.values(PRELOADED_SUBMISSIONS).forEach((sub) => {
+    map.set(sub.reference, sub);
+    if (sub.mobile) {
+      map.set(`phone:${sub.mobile.replace(/\D/g, '')}`, sub);
+    }
+  });
+
+  // Merge localStorage if in browser
+  if (typeof window !== 'undefined' && window.localStorage) {
+    try {
+      const stored = JSON.parse(window.localStorage.getItem('formsetu_submissions') || '{}');
+      Object.values(stored).forEach((sub) => {
+        map.set(sub.reference, sub);
+        if (sub.mobile) {
+          map.set(`phone:${sub.mobile.replace(/\D/g, '')}`, sub);
+        }
+      });
+    } catch (e) {
+      console.warn('[api] Failed to read localStorage submissions:', e);
+    }
+  }
+  return map;
+}
+
+function saveLocalSubmission(subRecord) {
+  if (typeof window !== 'undefined' && window.localStorage) {
+    try {
+      const stored = JSON.parse(window.localStorage.getItem('formsetu_submissions') || '{}');
+      stored[subRecord.reference] = subRecord;
+      if (subRecord.mobile) {
+        stored[`phone_${subRecord.mobile.replace(/\D/g, '')}`] = subRecord;
+      }
+      window.localStorage.setItem('formsetu_submissions', JSON.stringify(stored));
+    } catch (e) {
+      console.warn('[api] Failed to save submission to localStorage:', e);
+    }
+  }
+}
 
 async function request(path, options = {}) {
   const controller = new AbortController();
@@ -66,23 +106,44 @@ export const api = {
     }
   },
   auth: async (payload) => {
+    const cleanMobile = String(payload.mobile || '').replace(/\D/g, '');
     try {
-      return await request('/auth/mock', { method: 'POST', body: JSON.stringify(payload) });
+      const result = await request('/auth/mock', { method: 'POST', body: JSON.stringify(payload) });
+      // Check local storage as well in case locally submitted
+      const localStore = getStoredSubmissions();
+      const localExisting = localStore.get(`phone:${cleanMobile}`);
+      if (localExisting && !result.hasExistingSubmission) {
+        result.hasExistingSubmission = true;
+        result.submission = localExisting;
+      }
+      return result;
     } catch {
       await wait(300);
-      return { authenticated: true, method: payload.mode || 'otp', disclaimer: 'Client mock authentication' };
+      const localStore = getStoredSubmissions();
+      const existing = localStore.get(`phone:${cleanMobile}`);
+      return {
+        authenticated: true,
+        method: payload.mode || 'otp',
+        mobile: cleanMobile,
+        hasExistingSubmission: Boolean(existing),
+        submission: existing || null,
+        disclaimer: 'Client mock authentication'
+      };
     }
   },
-  prefill: async (formId) => {
+  prefill: async (formId, mobile = '') => {
+    const cleanMobile = String(mobile || '').replace(/\D/g, '');
     try {
-      return await request('/prefill', { method: 'POST', body: JSON.stringify({ formId }) });
+      return await request('/prefill', { method: 'POST', body: JSON.stringify({ formId, mobile: cleanMobile }) });
     } catch {
       await wait(400);
       const schema = getSchema(formId);
-      const prefill = getInitialState(schema, MOCK_DIGITALDOC);
+      const profile = getDigitalDocProfile(cleanMobile);
+      const prefill = getInitialState(schema, profile, cleanMobile);
       return {
         ...prefill,
-        mockResponse: MOCK_DIGITALDOC,
+        mockResponse: profile.digitaldoc,
+        citizenName: profile.name,
         matchedDocuments: Object.keys(prefill.documents).length,
         matchedFields: Object.keys(prefill.sources).length,
         disclaimer: 'Synthetic client-side data'
@@ -109,8 +170,11 @@ export const api = {
     }
   },
   submit: async (payload) => {
+    const cleanMobile = String(payload.mobile || payload.values?.phone || '').replace(/\D/g, '');
     try {
-      return await request('/submit', { method: 'POST', body: JSON.stringify(payload) });
+      const result = await request('/submit', { method: 'POST', body: JSON.stringify({ ...payload, mobile: cleanMobile }) });
+      saveLocalSubmission(result);
+      return result;
     } catch (err) {
       if (err.data && err.status === 422) {
         throw err;
@@ -136,18 +200,41 @@ export const api = {
         throw error;
       }
       const reference = `${schema.id === 'income' ? 'INC' : 'ITD'}-${new Date().getFullYear()}-${Math.random().toString(36).slice(2, 7).toUpperCase()}`;
-      mockSubmissions.set(reference, { reference, formId: schema.id, stage: 'Document check', createdAt: new Date().toISOString() });
-      return { status: 'success', reference, referenceNumber: reference, stage: 'Document check', submittedPayload: submissionPayload, payload: submissionPayload, message: 'Your prototype submission was accepted.' };
+      const subRecord = {
+        status: 'success',
+        reference,
+        referenceNumber: reference,
+        formId: schema.id,
+        formTitle: `${schema.title} application`,
+        mobile: cleanMobile,
+        applicantName: payload.values?.fullName || payload.values?.applicantName || 'Applicant',
+        stage: 'Document check',
+        statusBadge: 'Under Civic Review',
+        createdAt: new Date().toISOString(),
+        submittedPayload: submissionPayload,
+        payload: submissionPayload,
+        timeline: [
+          { title: 'Application Submitted', detail: 'Application received and registered on portal.', state: 'complete' },
+          { title: 'DigitalDoc Verification', detail: 'Identity, marksheet and income records verified.', state: 'complete' },
+          { title: 'Civic review', detail: 'A review officer is checking eligibility.', state: 'current' },
+          { title: 'Decision & payout', detail: 'The final decision and clearance notice will appear here.', state: 'pending' }
+        ],
+        message: 'Your prototype submission was accepted.'
+      };
+      saveLocalSubmission(subRecord);
+      return subRecord;
     }
   },
   status: async (reference) => {
     try {
       return await request(`/status/${reference}`);
     } catch {
-      const item = mockSubmissions.get(reference);
-      return {
-        reference: item?.reference || reference || 'INC-2026-9A82F',
-        stage: item?.stage || 'Under Civic Review',
+      const localStore = getStoredSubmissions();
+      const item = localStore.get(reference) || localStore.get(`phone:${String(reference).replace(/\D/g, '')}`);
+      return item || {
+        reference: reference || 'INC-2026-9A82F',
+        stage: 'Under Civic Review',
+        statusBadge: 'Under Civic Review',
         timeline: [
           { title: 'Application Submitted', detail: 'Application received and registered on portal.', state: 'complete' },
           { title: 'DigitalDoc Verification', detail: 'Identity, marksheet and income records verified.', state: 'complete' },

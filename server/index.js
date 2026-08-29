@@ -1,10 +1,20 @@
 import express from 'express';
 import { z } from 'zod';
-import { FORM_SCHEMAS, MOCK_DIGITALDOC, buildSubmissionPayload, getInitialState } from '../src/data/forms.js';
+import { FORM_SCHEMAS, MOCK_DIGITALDOC, getDigitalDocProfile, PRELOADED_SUBMISSIONS, buildSubmissionPayload, getInitialState } from '../src/data/forms.js';
 
 const app = express();
 const port = Number(process.env.PORT || 8787);
+
 const submissions = new Map();
+const submissionsByPhone = new Map();
+
+// Pre-load mock submissions
+Object.values(PRELOADED_SUBMISSIONS).forEach((sub) => {
+  submissions.set(sub.reference, sub);
+  if (sub.mobile) {
+    submissionsByPhone.set(sub.mobile.replace(/\D/g, ''), sub);
+  }
+});
 
 app.use(express.json({ limit: '1mb' }));
 
@@ -41,19 +51,44 @@ router.get('/forms/:formId', (request, response) => {
 router.post('/auth/mock', async (request, response) => {
   const parsed = z.object({ formId: z.string(), mobile: z.string(), mode: z.enum(['otp', 'password']).default('otp'), credential: z.string().min(1) }).safeParse(request.body);
   if (!parsed.success || !getSchema(parsed.data.formId)) return response.status(400).json({ error: 'A valid form and sign-in details are required.' });
-  if (!/^\d{10}$/.test(parsed.data.mobile.replace(/\D/g, ''))) return response.status(422).json({ error: 'Use a 10-digit mobile number.' });
+  const cleanMobile = parsed.data.mobile.replace(/\D/g, '');
+  if (!/^\d{10}$/.test(cleanMobile)) return response.status(422).json({ error: 'Use a 10-digit mobile number.' });
   if (parsed.data.mode === 'otp' && !/^\d{6}$/.test(parsed.data.credential)) return response.status(422).json({ error: 'Use the six-digit demo OTP 123456.' });
-  await wait(500);
-  return response.json({ authenticated: true, method: parsed.data.mode, disclaimer: 'Mock authentication only — no credentials were checked.' });
+  await wait(400);
+
+  const existing = submissionsByPhone.get(cleanMobile);
+  return response.json({
+    authenticated: true,
+    method: parsed.data.mode,
+    mobile: cleanMobile,
+    hasExistingSubmission: Boolean(existing),
+    submission: existing || null,
+    disclaimer: 'Mock authentication only — no credentials were checked.'
+  });
+});
+
+router.get('/user/submission/:mobile', (request, response) => {
+  const cleanMobile = (request.params.mobile || '').replace(/\D/g, '');
+  const existing = submissionsByPhone.get(cleanMobile);
+  if (!existing) return response.status(404).json({ error: 'No active application found for this number.' });
+  return response.json(existing);
 });
 
 router.post('/prefill', async (request, response) => {
-  const parsed = z.object({ formId: z.string() }).safeParse(request.body);
+  const parsed = z.object({ formId: z.string(), mobile: z.string().optional() }).safeParse(request.body);
   if (!parsed.success || !getSchema(parsed.data.formId)) return response.status(400).json({ error: 'A valid formId is required.' });
-  await wait(700);
+  await wait(500);
   const schema = getSchema(parsed.data.formId);
-  const prefill = getInitialState(schema, MOCK_DIGITALDOC);
-  return response.json({ ...prefill, mockResponse: MOCK_DIGITALDOC, matchedDocuments: Object.keys(prefill.documents).length, matchedFields: Object.keys(prefill.sources).length, disclaimer: 'Synthetic data only — no external DigitalDoc account is contacted.' });
+  const profile = getDigitalDocProfile(parsed.data.mobile);
+  const prefill = getInitialState(schema, profile, parsed.data.mobile);
+  return response.json({
+    ...prefill,
+    mockResponse: profile.digitaldoc,
+    citizenName: profile.name,
+    matchedDocuments: Object.keys(prefill.documents).length,
+    matchedFields: Object.keys(prefill.sources).length,
+    disclaimer: 'Synthetic data only — no external DigitalDoc account is contacted.'
+  });
 });
 
 router.post('/validate', (request, response) => {
@@ -66,7 +101,7 @@ router.post('/validate', (request, response) => {
 router.post('/chat', async (request, response) => {
   const parsed = z.object({ formId: z.string(), fieldId: z.string().optional(), message: z.string().trim().min(1).max(500), mode: z.enum(['simple', 'detailed']).default('simple'), language: z.enum(['English', 'Hindi']).default('English') }).safeParse(request.body);
   if (!parsed.success || !getSchema(parsed.data.formId)) return response.status(400).json({ error: 'Please send a valid message.' });
-  await wait(360);
+  await wait(300);
   const schema = getSchema(parsed.data.formId);
   const field = schema.fields.find((item) => item.id === parsed.data.fieldId) || schema.fields[0];
   const message = parsed.data.message.toLowerCase();
@@ -88,12 +123,12 @@ router.post('/chat', async (request, response) => {
 });
 
 router.post('/submit', async (request, response) => {
-  const parsed = z.object({ formId: z.string(), values: z.record(z.string(), z.string()).default({}), documents: z.record(z.string(), z.any()).default({}), simulateMismatch: z.boolean().default(false) }).safeParse(request.body);
+  const parsed = z.object({ formId: z.string(), mobile: z.string().optional(), values: z.record(z.string(), z.string()).default({}), documents: z.record(z.string(), z.any()).default({}), simulateMismatch: z.boolean().default(false) }).safeParse(request.body);
   if (!parsed.success || !getSchema(parsed.data.formId)) return response.status(400).json({ error: 'Invalid submission payload.' });
   const schema = getSchema(parsed.data.formId);
   const issues = validate(schema, parsed.data.values, parsed.data.documents);
   if (Object.keys(issues).length) return response.status(422).json({ error: 'Please resolve the highlighted answers.', issues });
-  await wait(950);
+  await wait(700);
   const payload = buildSubmissionPayload(schema, parsed.data.values, parsed.data.documents);
   if (parsed.data.simulateMismatch) {
     return response.status(422).json({
@@ -102,20 +137,45 @@ router.post('/submit', async (request, response) => {
       issues: { incomeCertificate: 'The applicant name does not match the income certificate.' }, payload
     });
   }
+  const cleanMobile = (parsed.data.mobile || parsed.data.values?.phone || '').replace(/\D/g, '');
   const reference = `${schema.id === 'income' ? 'INC' : 'ITD'}-${new Date().getFullYear()}-${Math.random().toString(36).slice(2, 7).toUpperCase()}`;
-  submissions.set(reference, { reference, formId: schema.id, stage: 'Document check', createdAt: new Date().toISOString() });
-  return response.json({ status: 'success', reference, referenceNumber: reference, stage: 'Document check', submittedPayload: payload, payload, message: 'Your prototype submission was accepted.' });
+  
+  const subRecord = {
+    reference,
+    referenceNumber: reference,
+    formId: schema.id,
+    formTitle: `${schema.title} application`,
+    mobile: cleanMobile,
+    applicantName: parsed.data.values?.fullName || parsed.data.values?.applicantName || 'Applicant',
+    stage: 'Document check',
+    statusBadge: 'Under Civic Review',
+    createdAt: new Date().toISOString(),
+    submittedPayload: payload,
+    payload,
+    timeline: [
+      { title: 'Application Submitted', detail: 'Application received and registered on portal.', state: 'complete' },
+      { title: 'DigitalDoc Verification', detail: 'Identity, marksheet and income records verified.', state: 'complete' },
+      { title: 'Civic review', detail: 'A review officer is checking eligibility.', state: 'current' },
+      { title: 'Decision & payout', detail: 'The final decision and clearance notice will appear here.', state: 'pending' }
+    ]
+  };
+
+  submissions.set(reference, subRecord);
+  if (cleanMobile) {
+    submissionsByPhone.set(cleanMobile, subRecord);
+  }
+
+  return response.json({
+    status: 'success',
+    ...subRecord,
+    message: 'Your prototype submission was accepted.'
+  });
 });
 
 router.get('/status/:reference', (request, response) => {
   const item = submissions.get(request.params.reference);
   if (!item) return response.status(404).json({ error: 'Reference not found.' });
-  return response.json({ ...item, timeline: [
-    { title: 'Application received', detail: 'Your mock submission was accepted.', state: 'complete' },
-    { title: 'Document check', detail: 'Documents are being checked for clarity and match.', state: 'current' },
-    { title: 'Civic review', detail: 'A review officer will check eligibility next.', state: 'upcoming' },
-    { title: 'Decision shared', detail: 'An update will appear here when the review finishes.', state: 'upcoming' }
-  ] });
+  return response.json(item);
 });
 
 app.use('/api', router);
